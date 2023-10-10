@@ -5,71 +5,34 @@ title: Getting started
 
 # Hyperledger Fabric Operator
 
-## Features
+## Recursos
 
-- [x] Create certificates authorities (CA)
-- [x] Create peers
-- [x] Create ordering services
-- [x] Create resources without manual provisioning of cryptographic material
-- [x] Domain routing with SNI using Istio
-- [x] Run chaincode as external chaincode in Kubernetes
-- [x] Support Hyperledger Fabric 2.3+
-- [x] Managed genesis for Ordering services
+- [x] Criação de certificates authorities (CA)
+- [x] Criação de peers
+- [x] Criação de ordering services
+- [x] Criação de recursos sem modificação manual do material criptográfico
+- [x] Roteamento de domínio com SNI usando Istio 
+- [x] Execução de chaincode como chaincode externo via Kubernetes
+- [x] Suporte a Hyperledger Fabric 2.3+
+- [x] Gerenciamento de genesis para Ordering Services
 - [x] E2E testing including the execution of chaincodes in KIND
-- [x] Renewal of certificates
-
-## Stay Up-to-Date
-
-`hlf-operator` is currently in stable. Watch **releases** of this repository to be notified for future updates:
-
-![hlf-operator-star-github](https://user-images.githubusercontent.com/6862893/123808402-022aa800-d8f1-11eb-8df4-8a9552f126a2.gif)
-
-## Discord
-
-For discussions and questions, please join the Hyperledger Foundation Discord:
-
-[https://discord.com/invite/hyperledger](https://discord.com/invite/hyperledger)
-
-The channel is located under `BEVEL`, named [`bevel-operator-fabric`](https://discordapp.com/channels/905194001349627914/967823782712594442).
-
-
-## Tutorial Videos
-
-Step by step video tutorials to setup hlf-operator in kubernetes
-
-[![Hyperledger Fabric on Kubernetes](https://img.youtube.com/vi/e04TcJHUI5M/0.jpg)](https://www.youtube.com/playlist?list=PLuAZTZDgj0csRQuNMY8wbYqOCpzggAuMo "Hyperledger Fabric on Kubernetes")
-
-## Hyperledger Meetup
-
-You can watch this video in order to see how to use it to deploy your own network:
-
-[![Hyperledger Fabric on Kubernetes](http://img.youtube.com/vi/namKDeJf5QI/0.jpg)](http://www.youtube.com/watch?v=namKDeJf5QI "Hyperledger Fabric on Kubernetes")
-
-## Sponsor
-
-|                                                                         |                                                                                                                                                                                                                               |
-| ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ![kfs logo](https://avatars.githubusercontent.com/u/74511895?s=200&v=4) | If you want to design and deploy a secure Blockchain network based on the latest version of Hyperledger Fabric, feel free to contact dviejo@kungfusoftware.es or visit [https://kfs.es/blockchain](https://kfs.es/blockchain) |
-
-## Getting started
+- [x] Renovação de certificados
 
 # Tutorial
 
 Resources:
 - [Hyperledger Fabric build ARM](https://www.polarsparc.com/xhtml/Hyperledger-ARM-Build.html)
 
-## Create Kubernetes Cluster
+## Criar Cluster Kubernetes
 
-To start deploying our red fabric we have to have a Kubernetes cluster. For this we will use KinD.
+Para começar o deploy da rede Fabric é necessário criar um cluster Kubernetes. Será utilizado aqui o KinD.
 
-Ensure you have these ports available before creating the cluster:
+Certifique-se de ter as seguintes portas disponíveis antes de começar:
 - 80
 - 443
 
-If these ports are not available this tutorial will not work.
-
 ```bash
-cat << EOF > kind-config.yaml
+cat << EOF > resources/kind-config.yaml
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
@@ -82,18 +45,19 @@ nodes:
     hostPort: 443
 EOF
 
-kind create cluster --config=./kind-config.yaml
+kind create cluster --config=./resources/kind-config.yaml
 
 ```
 
-## Install Kubernetes operator
+## Instalar o operador Kubernetes
 
 In this step we are going to install the kubernetes operator for Fabric, this will install:
+Nesta etapa instalaremos o operador Kubernetes para o Fabric. Isso irá instalar:
 
 - CRD (Custom Resource Definitions) to deploy Certification Fabric Peers, Orderers and Authorities
 - Deploy the program to deploy the nodes in Kubernetes
 
-To install helm: [https://helm.sh/docs/intro/install/](https://helm.sh/docs/intro/install/)
+Instale o helm: [https://helm.sh/docs/intro/install/](https://helm.sh/docs/intro/install/)
 
 ```bash
 helm repo add kfs https://kfsoftware.github.io/hlf-helm-charts --force-update
@@ -102,18 +66,18 @@ helm install hlf-operator --version=1.9.0 -- kfs/hlf-operator
 ```
 
 
-### Install the Kubectl plugin
+### Instalar o plugin Kubectl
 
-To install the kubectl plugin, you must first install Krew:
+Antes de instalar o plugin Kubectl, instale antes o Krew:
 [https://krew.sigs.k8s.io/docs/user-guide/setup/install/](https://krew.sigs.k8s.io/docs/user-guide/setup/install/)
 
-Afterwards, the plugin can be installed with the following command:
+A seguir, instale o Kubectl com o seguinte comando:
 
 ```bash
 kubectl krew install hlf
 ```
 
-### Install Istio
+### Instale o Istio
 
 Install Istio binaries on the machine:
 ```bash
@@ -192,9 +156,6 @@ EOF
 
 ```
 
-## Deploy a `Peer` organization
-
-
 ### Environment Variables for AMD (Default)
 
 ```bash
@@ -224,8 +185,7 @@ export CA_VERSION=1.5.6
 ```
 
 
-
-### Configure Internal DNS
+### Configurar DNS Interno
 
 ```bash
 CLUSTER_IP=$(kubectl -n istio-system get svc istio-ingressgateway -o json | jq -r .spec.clusterIP)
@@ -265,7 +225,8 @@ data:
 EOF
 ```
 
-### Deploy a certificate authority
+## Criação do CA para Org1
+
 
 ```bash
 
@@ -275,13 +236,13 @@ kubectl hlf ca create  --image=$CA_IMAGE --version=$CA_VERSION --storage-class=s
 kubectl wait --timeout=180s --for=condition=Running fabriccas.hlf.kungfusoftware.es --all
 ```
 
-Check that the certification authority is deployed and works:
+Verifique se o CA foi implementado e funciona:
 
 ```bash
 curl -k https://org1-ca.localho.st:443/cainfo
 ```
 
-Register a user in the certification authority of the peer organization (Org1MSP)
+Registre um usuário peer no CA da Organização 1 (Org1MSP)
 
 ```bash
 # register user in CA for peers
@@ -290,7 +251,7 @@ kubectl hlf ca register --name=org1-ca --user=peer --secret=peerpw --type=peer \
 
 ```
 
-### Deploy a peer
+### Deploy de peers
 
 ```bash
 kubectl hlf peer create --statedb=couchdb --image=$PEER_IMAGE --version=$PEER_VERSION --storage-class=standard --enroll-id=peer --mspid=Org1MSP \
@@ -305,22 +266,42 @@ kubectl hlf peer create --statedb=couchdb --image=$PEER_IMAGE --version=$PEER_VE
 kubectl wait --timeout=180s --for=condition=Running fabricpeers.hlf.kungfusoftware.es --all
 ```
 
-Check that the peer is deployed and works:
+(OPCIONAL) Os peers acima não são capazes de instalar chaincode local, apenas chaincodes CCAS. 
+Para criar um peer que instala chaincode local, será neceessário criar um peer com o atributo kubernetes chaincode builder (k8s builder) com o comando abaixo:
+```bash
+
+export PEER_IMAGE=quay.io/kfsoftware/fabric-peer
+export PEER_VERSION=2.4.1-v0.0.3
+export MSP_ORG=Org1MSP
+export PEER_SECRET=peerpw
+
+kubectl hlf peer create --image=$PEER_IMAGE --version=$PEER_VERSION --storage-class=$STORAGE_CLASS --enroll-id=peer --mspid=$MSP_ORG \
+--enroll-pw=$PEER_SECRET --capacity=5Gi --name=org1-peer2 --ca-name=org1-ca.default --k8s-builder=true --hosts=peer2-org1.localho.st
+
+kubectl wait --timeout=180s --for=condition=Running fabricpeers.hlf.kungfusoftware.es --all
+
+# leva alguns minutos
+
+```
+
+Verifique se os peers foram implementados e funcionam:
 
 ```bash
 openssl s_client -connect peer0-org1.localho.st:443
 openssl s_client -connect peer1-org1.localho.st:443
+openssl s_client -connect peer2-org1.localho.st:443
+
 ```
 
-## Deploy an `Orderer` organization
+## Deploy de uma organização `Orderer`
 
-To deploy an `Orderer` organization we have to:
+para fazer o deploy de uma organização orderer, temos que:
 
-1. Create a certification authority
-2. Register user `orderer` with password `ordererpw`
-3. Create orderer
+1. Criar um certification authority (CA)
+2. Registrar usuário `orderer` com senha `ordererpw`
+3. Criar orderer
 
-### Create the certification authority
+### Criar o CA
 
 ```bash
 
@@ -331,31 +312,42 @@ kubectl wait --timeout=180s --for=condition=Running fabriccas.hlf.kungfusoftware
 
 ```
 
-Check that the certification authority is deployed and works:
+Verifique se a certificação foi implementada e funciona:
 
 ```bash
 curl -vik https://ord-ca.localho.st:443/cainfo
 ```
 
-### Register user `orderer`
+### Registre o usuário `orderer`
 
 ```bash
 kubectl hlf ca register --name=ord-ca --user=orderer --secret=ordererpw \
     --type=orderer --enroll-id enroll --enroll-secret=enrollpw --mspid=OrdererMSP --ca-url="https://ord-ca.localho.st:443"
 
 ```
-### Deploy orderer
+### Deploy de três orderers
 
 ```bash
 kubectl hlf ordnode create --image=$ORDERER_IMAGE --version=$ORDERER_VERSION \
     --storage-class=standard --enroll-id=orderer --mspid=OrdererMSP \
-    --enroll-pw=ordererpw --capacity=2Gi --name=ord-node1 --ca-name=ord-ca.default \
+    --enroll-pw=ordererpw --capacity=2Gi --name=ord-node0 --ca-name=ord-ca.default \
     --hosts=orderer0-ord.localho.st --istio-port=443
+
+kubectl hlf ordnode create --image=$ORDERER_IMAGE --version=$ORDERER_VERSION \
+    --storage-class=standard --enroll-id=orderer --mspid=OrdererMSP \
+    --enroll-pw=ordererpw --capacity=2Gi --name=ord-node1 --ca-name=ord-ca.default \
+    --hosts=orderer1-ord.localho.st --istio-port=443
+
+kubectl hlf ordnode create --image=$ORDERER_IMAGE --version=$ORDERER_VERSION \
+    --storage-class=standard --enroll-id=orderer --mspid=OrdererMSP \
+    --enroll-pw=ordererpw --capacity=2Gi --name=ord-node2 --ca-name=ord-ca.default \
+    --hosts=orderer2-ord.localho.st --istio-port=443
+
 
 kubectl wait --timeout=180s --for=condition=Running fabricorderernodes.hlf.kungfusoftware.es --all
 ```
 
-Check that the orderer is running:
+Verifique se os orderers funcionam:
 
 ```bash
 kubectl get pods
@@ -363,14 +355,16 @@ kubectl get pods
 
 ```bash
 openssl s_client -connect orderer0-ord.localho.st:443
+openssl s_client -connect orderer1-ord.localho.st:443
+openssl s_client -connect orderer2-ord.localho.st:443
 ```
 
 
 ## Create channel
 
-To create the channel we need to first create the wallet secret, which will contain the identities used by the operator to manage the channel
+Para criar o canal nós precisamos criar o "wallet secret", que irá conter as identidades usadas pelo bevel operator para gerenciar o canal
 
-### Register and enrolling OrdererMSP identity
+### Registrar e matricular identidade OrdererMSP
 
 ```bash
 # register
@@ -378,14 +372,13 @@ kubectl hlf ca register --name=ord-ca --user=admin --secret=adminpw \
     --type=admin --enroll-id enroll --enroll-secret=enrollpw --mspid=OrdererMSP
 
 # enroll
-
 kubectl hlf ca enroll --name=ord-ca --namespace=default \
     --user=admin --secret=adminpw --mspid OrdererMSP \
-    --ca-name tlsca  --output orderermsp.yaml
+    --ca-name tlsca  --output resources/orderermsp.yaml
 ```
 
 
-### Register and enrolling Org1MSP identity
+### Registrar e matricular identidade Org1MSP
 
 ```bash
 # register
@@ -395,17 +388,17 @@ kubectl hlf ca register --name=org1-ca --namespace=default --user=admin --secret
 # enroll
 kubectl hlf ca enroll --name=org1-ca --namespace=default \
     --user=admin --secret=adminpw --mspid Org1MSP \
-    --ca-name ca  --output org1msp.yaml
-
+    --ca-name ca  --output resources/org1msp.yaml
 ```
 
-### Create the secret
+### Criar o segredo
 
 ```bash
 
+
 kubectl create secret generic wallet --namespace=default \
-        --from-file=org1msp.yaml=$PWD/org1msp.yaml \
-        --from-file=orderermsp.yaml=$PWD/orderermsp.yaml
+        --from-file=org1msp.yaml=$PWD/resources/org1msp.yaml \
+        --from-file=orderermsp.yaml=$PWD/resources/orderermsp.yaml
 ```
 
 ### Create main channel
@@ -439,7 +432,7 @@ spec:
     orderer:
       batchSize:
         absoluteMaxBytes: 1048576
-        maxMessageCount: 10
+        maxMessageCount: 120
         preferredMaxBytes: 524288
       batchTimeout: 2s
       capabilities:
@@ -470,21 +463,35 @@ spec:
       secretName: wallet
       secretNamespace: default
   externalPeerOrganizations: []
-  ordererOrganizations:
+ ordererOrganizations:
     - caName: "ord-ca"
       caNamespace: "default"
       externalOrderersToJoin:
+        - host: ord-node0
+          port: 7053
         - host: ord-node1
+          port: 7053
+        - host: ord-node2
           port: 7053
       mspID: OrdererMSP
       ordererEndpoints:
-        - ord-node1:7050
+        - orderer0-ord.localho.st:443
+        - orderer1-ord.localho.st:443
+        - orderer2-ord.localho.st:443
       orderersToJoin: []
   orderers:
-    - host: ord-node1
-      port: 7050
+    - host: orderer0-ord.localho.st
+      port: 443
       tlsCert: |-
 ${ORDERER0_TLS_CERT}
+    - host: orderer1-ord.localho.st
+      port: 443
+      tlsCert: |-
+${ORDERER1_TLS_CERT}
+    - host: orderer2-ord.localho.st
+      port: 443
+      tlsCert: |-
+${ORDERER2_TLS_CERT}
 
 EOF
 ```
@@ -521,143 +528,110 @@ ${ORDERER0_TLS_CERT}
       namespace: default
     - name: org1-peer1
       namespace: default
+    - name: org1-peer2
+      namespace: default
 EOF
 
 
 ```
 
+### Instalação de chaincode as a service (ccas): Em breve
 
+-----------
+-----------
 
-## Install a chaincode
+### Instalação de chaincode Local
 
-### Prepare connection string for a peer
+## Preparar string / arquivo de conexão para um peer
 
-To prepare the connection string, we have to:
+Para preparar a string de conexão, precisamos:
 
-1. Get connection string without users for organization Org1MSP and OrdererMSP
-2. Register a user in the certification authority for signing (register)
-3. Obtain the certificates using the previously created user (enroll)
-4. Attach the user to the connection string
+1. Obter a string de conexão sem usuários para a organização Org1MSP e OrdererMSP
+2. Registre um usuário no CA para assinatura (registro)
+3. Obter os certificados usando o usuário criado no passo 2 (enroll)
+4. Anexar o usuário à string de conexão
 
-1. Get connection string without users for organization Org1MSP and OrdererMSP
+--------------
 
+1. Obter a string de conexão sem usuários para a organização Org1MSP e OrdererMSP
 
 ```bash
 kubectl hlf inspect --output org1.yaml -o Org1MSP -o OrdererMSP
 ```
 
-2. Register a user in the certification authority for signing
+2. Registre um usuário no CA para assinatura (registro)
 ```bash
 kubectl hlf ca register --name=org1-ca --user=admin --secret=adminpw --type=admin \
  --enroll-id enroll --enroll-secret=enrollpw --mspid Org1MSP  
 ```
 
-3. Get the certificates using the user created above
+3. Obter os certificados usando o usuário criado no passo 2 (enroll)
 ```bash
 kubectl hlf ca enroll --name=org1-ca --user=admin --secret=adminpw --mspid Org1MSP \
         --ca-name ca  --output peer-org1.yaml
 ```
 
-4. Attach the user to the connection string
+4. Anexar o usuário à string de conexão
 ```bash
 kubectl hlf utils adduser --userPath=peer-org1.yaml --config=org1.yaml --username=admin --mspid=Org1MSP
 ```
 
-
-### Create metadata file
-
-```bash
-# remove the code.tar.gz chaincode.tgz if they exist
-rm code.tar.gz chaincode.tgz
-export CHAINCODE_NAME=asset
-export CHAINCODE_LABEL=asset
-cat << METADATA-EOF > "metadata.json"
-{
-    "type": "ccaas",
-    "label": "${CHAINCODE_LABEL}"
-}
-METADATA-EOF
-## chaincode as a service
-```
-
-### Prepare connection file
+## Instalação do chaincode
+Com o arquivo de conexão preparado, vamos instalar o chaincode no peer que possua o atributo k8s-builder, como explicado no passo de deploy de peers
 
 ```bash
-cat > "connection.json" <<CONN_EOF
-{
-  "address": "${CHAINCODE_NAME}:7052",
-  "dial_timeout": "10s",
-  "tls_required": false
-}
-CONN_EOF
+kubectl hlf chaincode install --path=./chaincodes/fabcar/go \
+    --config=org1.yaml --language=golang --label=fabcar --user=admin --peer=org1-peer0.default
 
-tar cfz code.tar.gz connection.json
-tar cfz chaincode.tgz metadata.json code.tar.gz
-export PACKAGE_ID=$(kubectl hlf chaincode calculatepackageid --path=chaincode.tgz --language=node --label=$CHAINCODE_LABEL)
-echo "PACKAGE_ID=$PACKAGE_ID"
-
-kubectl hlf chaincode install --path=./chaincode.tgz \
-    --config=org1.yaml --language=golang --label=$CHAINCODE_LABEL --user=admin --peer=org1-peer0.default
-kubectl hlf chaincode install --path=./chaincode.tgz \
-    --config=org1.yaml --language=golang --label=$CHAINCODE_LABEL --user=admin --peer=org1-peer1.default
-
+# this can take 3-4 minutes
 ```
 
+Verificação de chaincodes instalados
 
-## Deploy chaincode container on cluster
-The following command will create or update the CRD based on the packageID, chaincode name, and docker image.
-
-```bash
-kubectl hlf externalchaincode sync --image=kfsoftware/chaincode-external:latest \
-    --name=$CHAINCODE_NAME \
-    --namespace=default \
-    --package-id=$PACKAGE_ID \
-    --tls-required=false \
-    --replicas=1
-```
-
-
-## Check installed chaincodes
 ```bash
 kubectl hlf chaincode queryinstalled --config=org1.yaml --user=admin --peer=org1-peer0.default
 ```
 
-## Approve chaincode
+Aprovar chaincode
+
 ```bash
-export SEQUENCE=1
-export VERSION="1.0"
+PACKAGE_ID=fabcar:0c616be7eebace4b3c2aa0890944875f695653dbf80bef7d95f3eed6667b5f40 # replace it with the package id of your chaincode
 kubectl hlf chaincode approveformyorg --config=org1.yaml --user=admin --peer=org1-peer0.default \
     --package-id=$PACKAGE_ID \
-    --version "$VERSION" --sequence "$SEQUENCE" --name=asset \
+    --version "1.0" --sequence 1 --name=fabcar \
     --policy="OR('Org1MSP.member')" --channel=demo
 ```
 
-## Commit chaincode
+Fazer o commit do chaincode
+
 ```bash
-kubectl hlf chaincode commit --config=org1.yaml --user=admin --mspid=Org1MSP \
-    --version "$VERSION" --sequence "$SEQUENCE" --name=asset \
+kubectl hlf chaincode commit --config=org1.yaml --mspid=Org1MSP --user=admin \
+    --version "1.0" --sequence 1 --name=fabcar \
     --policy="OR('Org1MSP.member')" --channel=demo
 ```
 
+Testar chaincode
 
-## Invoke a transaction on the channel
 ```bash
 kubectl hlf chaincode invoke --config=org1.yaml \
     --user=admin --peer=org1-peer0.default \
-    --chaincode=asset --channel=demo \
+    --chaincode=fabcar --channel=demo \
     --fcn=initLedger -a '[]'
 ```
 
-## Query assets in the channel
+Fazer query de todos os carros / assets
+
 ```bash
 kubectl hlf chaincode query --config=org1.yaml \
     --user=admin --peer=org1-peer0.default \
-    --chaincode=asset --channel=demo \
-    --fcn=GetAllAssets -a '[]'
+    --chaincode=fabcar --channel=demo \
+    --fcn=QueryAllCars -a '[]'
 ```
 
+### Usando clientes:
+EM BREVE SE DEUS QUISER
 
-At this point, you should have:
+A essa altura, você deve ter:
 
 - Ordering service with 1 nodes and a CA
 - Peer organization with a peer and a CA
@@ -665,9 +639,13 @@ At this point, you should have:
 - A chaincode install in peer0
 - A chaincode approved and committed
 
-If something went wrong or didn't work, please, open an issue.
+- Um serviço de ordenação com 3 orderers e CA
+- Organização com 3 peers e CA
+- Um canal chamado "demo"
+- Um chaincode instalado no "peer2" da organização aprovado e commitado
 
-## Cleanup the environment
+
+## Derrubando o ambiente
 
 ```bash
 kubectl delete fabricorderernodes.hlf.kungfusoftware.es --all-namespaces --all
@@ -676,6 +654,8 @@ kubectl delete fabriccas.hlf.kungfusoftware.es --all-namespaces --all
 kubectl delete fabricchaincode.hlf.kungfusoftware.es --all-namespaces --all
 kubectl delete fabricmainchannels --all-namespaces --all
 kubectl delete fabricfollowerchannels --all-namespaces --all
+
+kind delete cluster
 ```
 
 ## Troubleshooting
