@@ -628,16 +628,13 @@ kubectl hlf chaincode query --config=org1.yaml \
     --fcn=QueryAllCars -a '[]'
 ```
 
-### Usando clientes:
+## Usando clientes:
 EM BREVE SE DEUS QUISER
 
+
+## Finalizando
 A essa altura, você deve ter:
 
-- Ordering service with 1 nodes and a CA
-- Peer organization with a peer and a CA
-- A channel **demo**
-- A chaincode install in peer0
-- A chaincode approved and committed
 
 - Um serviço de ordenação com 3 orderers e CA
 - Organização com 3 peers e CA
