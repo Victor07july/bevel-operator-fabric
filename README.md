@@ -51,7 +51,6 @@ kind create cluster --config=./resources/kind-config.yaml
 
 ## Instalar o operador Kubernetes
 
-In this step we are going to install the kubernetes operator for Fabric, this will install:
 Nesta etapa instalaremos o operador Kubernetes para o Fabric. Isso irá instalar:
 
 - CRD (Custom Resource Definitions) to deploy Certification Fabric Peers, Orderers and Authorities
