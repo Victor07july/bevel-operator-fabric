@@ -454,9 +454,6 @@ spec:
     - mspID: Org1MSP
       caName: "org1-ca"
       caNamespace: "default"
-    - mspID: Org2MSP
-      caName: "org2-ca"
-      caNamespace: "default"
   identities:
     OrdererMSP:
       secretKey: orderermsp.yaml
@@ -515,7 +512,9 @@ metadata:
   name: demo-org1msp
 spec:
   anchorPeers:
-    - host: org1-peer0.default
+    - host: org1-peer0.localho.st
+      port: 7051
+    - host: org1-peer2.localho.st
       port: 7051
   hlfIdentity:
     secretKey: org1msp.yaml
