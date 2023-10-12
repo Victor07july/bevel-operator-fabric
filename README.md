@@ -514,8 +514,6 @@ spec:
   anchorPeers:
     - host: org1-peer0.localho.st
       port: 7051
-    - host: org1-peer2.localho.st
-      port: 7051
   hlfIdentity:
     secretKey: org1msp.yaml
     secretName: wallet
@@ -531,8 +529,6 @@ ${ORDERER0_TLS_CERT}
     - name: org1-peer0
       namespace: default
     - name: org1-peer1
-      namespace: default
-    - name: org1-peer2
       namespace: default
 EOF
 
