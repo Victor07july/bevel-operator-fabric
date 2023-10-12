@@ -560,7 +560,7 @@ Para preparar a string de conexão, precisamos:
 1. Obter a string de conexão sem usuários para a organização Org1MSP e OrdererMSP
 
 ```bash
-kubectl hlf inspect --output org1.yaml -o Org1MSP -o OrdererMSP
+kubectl hlf inspect -c=demo --output resources/network.yaml -o Org1MSP -o OrdererMSP
 ```
 
 2. Registre um usuário no CA para assinatura (registro)
@@ -572,20 +572,20 @@ kubectl hlf ca register --name=org1-ca --user=admin --secret=adminpw --type=admi
 3. Obter os certificados usando o usuário criado no passo 2 (enroll)
 ```bash
 kubectl hlf ca enroll --name=org1-ca --user=admin --secret=adminpw --mspid Org1MSP \
-        --ca-name ca  --output peer-org1.yaml
+        --ca-name ca  --output resources/peer-org1.yaml
 ```
 
 4. Anexar o usuário à string de conexão
 ```bash
-kubectl hlf utils adduser --userPath=peer-org1.yaml --config=org1.yaml --username=admin --mspid=Org1MSP
+kubectl hlf utils adduser --userPath=resources/peer-org1.yaml --config=resources/network.yaml --username=admin --mspid=Org1MSP
 ```
 
 ## Instalação do chaincode
 Com o arquivo de conexão preparado, vamos instalar o chaincode no peer que possua o atributo k8s-builder, como explicado no passo de deploy de peers
 
 ```bash
-kubectl hlf chaincode install --path=./chaincodes/fabcar/go \
-    --config=org1.yaml --language=golang --label=fabcar --user=admin --peer=org1-peer0.default
+kubectl hlf chaincode install --path=./fixtures/chaincodes/fabcar/go \
+    --config=resources/network.yaml --language=golang --label=fabcar --user=admin --peer=org1-peer2.default
 
 # this can take 3-4 minutes
 ```
@@ -593,14 +593,14 @@ kubectl hlf chaincode install --path=./chaincodes/fabcar/go \
 Verificação de chaincodes instalados
 
 ```bash
-kubectl hlf chaincode queryinstalled --config=org1.yaml --user=admin --peer=org1-peer0.default
+kubectl hlf chaincode queryinstalled --config=resources/network.yaml --user=admin --peer=org1-peer2.default
 ```
 
 Aprovar chaincode
 
 ```bash
 PACKAGE_ID=fabcar:0c616be7eebace4b3c2aa0890944875f695653dbf80bef7d95f3eed6667b5f40 # replace it with the package id of your chaincode
-kubectl hlf chaincode approveformyorg --config=org1.yaml --user=admin --peer=org1-peer0.default \
+kubectl hlf chaincode approveformyorg --config=resources/network.yaml --user=admin --peer=org1-peer2.default \
     --package-id=$PACKAGE_ID \
     --version "1.0" --sequence 1 --name=fabcar \
     --policy="OR('Org1MSP.member')" --channel=demo
@@ -609,7 +609,7 @@ kubectl hlf chaincode approveformyorg --config=org1.yaml --user=admin --peer=org
 Fazer o commit do chaincode
 
 ```bash
-kubectl hlf chaincode commit --config=org1.yaml --mspid=Org1MSP --user=admin \
+kubectl hlf chaincode commit --config=resources/network.yaml --mspid=Org1MSP --user=admin \
     --version "1.0" --sequence 1 --name=fabcar \
     --policy="OR('Org1MSP.member')" --channel=demo
 ```
@@ -617,8 +617,8 @@ kubectl hlf chaincode commit --config=org1.yaml --mspid=Org1MSP --user=admin \
 Testar chaincode
 
 ```bash
-kubectl hlf chaincode invoke --config=org1.yaml \
-    --user=admin --peer=org1-peer0.default \
+kubectl hlf chaincode invoke --config=resources/network.yaml \
+    --user=admin --peer=org1-peer2.default \
     --chaincode=fabcar --channel=demo \
     --fcn=initLedger -a '[]'
 ```
@@ -626,8 +626,8 @@ kubectl hlf chaincode invoke --config=org1.yaml \
 Fazer query de todos os carros / assets
 
 ```bash
-kubectl hlf chaincode query --config=org1.yaml \
-    --user=admin --peer=org1-peer0.default \
+kubectl hlf chaincode query --config=resources/network.yaml \
+    --user=admin --peer=org1-peer2.default \
     --chaincode=fabcar --channel=demo \
     --fcn=QueryAllCars -a '[]'
 ```
