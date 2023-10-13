@@ -274,10 +274,10 @@ export PEER_VERSION=2.4.1-v0.0.3
 export MSP_ORG=Org1MSP
 export PEER_SECRET=peerpw
 
-kubectl hlf peer create --image=$PEER_IMAGE --version=$PEER_VERSION --storage-class=$STORAGE_CLASS --enroll-id=peer --mspid=$MSP_ORG \
+kubectl hlf peer create --statedb=couchdb --image=$PEER_IMAGE --version=$PEER_VERSION --storage-class=standard --enroll-id=peer --mspid=$MSP_ORG \
 --enroll-pw=$PEER_SECRET --capacity=5Gi --name=org1-peer0 --ca-name=org1-ca.default --k8s-builder=true --hosts=peer0-org1.localho.st ----istio-port=443
 
-kubectl hlf peer create --image=$PEER_IMAGE --version=$PEER_VERSION --storage-class=$STORAGE_CLASS --enroll-id=peer --mspid=$MSP_ORG \
+kubectl hlf peer create --statedb=couchdb --image=$PEER_IMAGE --version=$PEER_VERSION --storage-class=standard --enroll-id=peer --mspid=$MSP_ORG \
 --enroll-pw=$PEER_SECRET --capacity=5Gi --name=org1-peer1 --ca-name=org1-ca.default --k8s-builder=true --hosts=peer1-org1.localho.st ----istio-port=443
 
 kubectl wait --timeout=180s --for=condition=Running fabricpeers.hlf.kungfusoftware.es --all
