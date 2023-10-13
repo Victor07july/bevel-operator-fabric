@@ -514,7 +514,7 @@ metadata:
   name: demo-org1msp
 spec:
   anchorPeers:
-    - host: org1-peer0.localho.st
+    - host: org1-peer0.default
       port: 7051
   hlfIdentity:
     secretKey: org1msp.yaml
