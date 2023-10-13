@@ -265,8 +265,8 @@ kubectl hlf peer create --statedb=couchdb --image=$PEER_IMAGE --version=$PEER_VE
 kubectl wait --timeout=180s --for=condition=Running fabricpeers.hlf.kungfusoftware.es --all
 ```
 
-(OPCIONAL) Os peers acima não são capazes de instalar chaincode local, apenas chaincodes CCAS. 
-Para criar um peer que instala chaincode local, será neceessário criar um peer com o atributo kubernetes chaincode builder (k8s builder) com o comando abaixo:
+(ALTERNATIVA) Os peers acima não são capazes de instalar chaincode local, apenas chaincodes CCAS. 
+Para criar peers que instalam chaincode local, será neceessário criar um peer com o atributo kubernetes chaincode builder (k8s builder) com o comando abaixo:
 ```bash
 
 export PEER_IMAGE=quay.io/kfsoftware/fabric-peer
@@ -275,7 +275,10 @@ export MSP_ORG=Org1MSP
 export PEER_SECRET=peerpw
 
 kubectl hlf peer create --image=$PEER_IMAGE --version=$PEER_VERSION --storage-class=$STORAGE_CLASS --enroll-id=peer --mspid=$MSP_ORG \
---enroll-pw=$PEER_SECRET --capacity=5Gi --name=org1-peer2 --ca-name=org1-ca.default --k8s-builder=true --hosts=peer2-org1.localho.st
+--enroll-pw=$PEER_SECRET --capacity=5Gi --name=org1-peer0 --ca-name=org1-ca.default --k8s-builder=true --hosts=peer0-org1.localho.st
+
+kubectl hlf peer create --image=$PEER_IMAGE --version=$PEER_VERSION --storage-class=$STORAGE_CLASS --enroll-id=peer --mspid=$MSP_ORG \
+--enroll-pw=$PEER_SECRET --capacity=5Gi --name=org1-peer1 --ca-name=org1-ca.default --k8s-builder=true --hosts=peer1-org1.localho.st
 
 kubectl wait --timeout=180s --for=condition=Running fabricpeers.hlf.kungfusoftware.es --all
 
@@ -288,7 +291,6 @@ Verifique se os peers foram implementados e funcionam:
 ```bash
 openssl s_client -connect peer0-org1.localho.st:443
 openssl s_client -connect peer1-org1.localho.st:443
-openssl s_client -connect peer2-org1.localho.st:443
 
 ```
 
@@ -581,7 +583,10 @@ Com o arquivo de conexão preparado, vamos instalar o chaincode no peer que poss
 
 ```bash
 kubectl hlf chaincode install --path=./fixtures/chaincodes/fabcar/go \
-    --config=resources/network.yaml --language=golang --label=fabcar --user=admin --peer=org1-peer2.default
+    --config=resources/network.yaml --language=golang --label=fabcar --user=admin --peer=org1-peer0.default
+
+kubectl hlf chaincode install --path=./fixtures/chaincodes/fabcar/go \
+    --config=resources/network.yaml --language=golang --label=fabcar --user=admin --peer=org1-peer1.default
 
 # this can take 3-4 minutes
 ```
@@ -589,14 +594,16 @@ kubectl hlf chaincode install --path=./fixtures/chaincodes/fabcar/go \
 Verificação de chaincodes instalados
 
 ```bash
-kubectl hlf chaincode queryinstalled --config=resources/network.yaml --user=admin --peer=org1-peer2.default
+kubectl hlf chaincode queryinstalled --config=resources/network.yaml --user=admin --peer=org1-peer0.default
+
+kubectl hlf chaincode queryinstalled --config=resources/network.yaml --user=admin --peer=org1-peer1.default
 ```
 
 Aprovar chaincode
 
 ```bash
 PACKAGE_ID=0c616be7eebace4b3c2aa0890944875f695653dbf80bef7d95f3eed6667b5f40 # replace it with the package id of your chaincode
-kubectl hlf chaincode approveformyorg --config=resources/network.yaml --user=admin --peer=org1-peer2.default \
+kubectl hlf chaincode approveformyorg --config=resources/network.yaml --user=admin --peer=org1-peer0.default \
     --package-id=$PACKAGE_ID \
     --version "1.0" --sequence 1 --name=fabcar \
     --policy="OR('Org1MSP.member')" --channel=demo
@@ -614,7 +621,7 @@ Testar chaincode
 
 ```bash
 kubectl hlf chaincode invoke --config=resources/network.yaml \
-    --user=admin --peer=org1-peer2.default \
+    --user=admin --peer=org1-peer0.default \
     --chaincode=fabcar --channel=demo \
     --fcn=initLedger -a '[]'
 ```
@@ -623,7 +630,7 @@ Fazer query de todos os carros / assets
 
 ```bash
 kubectl hlf chaincode query --config=resources/network.yaml \
-    --user=admin --peer=org1-peer2.default \
+    --user=admin --peer=org1-peer0.default \
     --chaincode=fabcar --channel=demo \
     --fcn=QueryAllCars -a '[]'
 ```
