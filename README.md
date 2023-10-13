@@ -503,7 +503,7 @@ EOF
 ```bash
 
 export IDENT_8=$(printf "%8s" "")
-export ORDERER0_TLS_CERT=$(kubectl get fabricorderernodes ord-node1 -o=jsonpath='{.status.tlsCert}' | sed -e "s/^/${IDENT_8}/" )
+export ORDERER0_TLS_CERT=$(kubectl get fabricorderernodes ord-node0 -o=jsonpath='{.status.tlsCert}' | sed -e "s/^/${IDENT_8}/" )
 
 kubectl apply -f - <<EOF
 apiVersion: hlf.kungfusoftware.es/v1alpha1
@@ -524,7 +524,7 @@ spec:
   orderers:
     - certificate: |
 ${ORDERER0_TLS_CERT}
-      url: grpcs://ord-node1.default:7050
+      url: grpcs://ord-node0.default:7050
   peersToJoin:
     - name: org1-peer0
       namespace: default
