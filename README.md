@@ -275,10 +275,10 @@ export MSP_ORG=Org1MSP
 export PEER_SECRET=peerpw
 
 kubectl hlf peer create --image=$PEER_IMAGE --version=$PEER_VERSION --storage-class=$STORAGE_CLASS --enroll-id=peer --mspid=$MSP_ORG \
---enroll-pw=$PEER_SECRET --capacity=5Gi --name=org1-peer0 --ca-name=org1-ca.default --k8s-builder=true --hosts=peer0-org1.localho.st
+--enroll-pw=$PEER_SECRET --capacity=5Gi --name=org1-peer0 --ca-name=org1-ca.default --k8s-builder=true --hosts=peer0-org1.localho.st ----istio-port=443
 
 kubectl hlf peer create --image=$PEER_IMAGE --version=$PEER_VERSION --storage-class=$STORAGE_CLASS --enroll-id=peer --mspid=$MSP_ORG \
---enroll-pw=$PEER_SECRET --capacity=5Gi --name=org1-peer1 --ca-name=org1-ca.default --k8s-builder=true --hosts=peer1-org1.localho.st
+--enroll-pw=$PEER_SECRET --capacity=5Gi --name=org1-peer1 --ca-name=org1-ca.default --k8s-builder=true --hosts=peer1-org1.localho.st ----istio-port=443
 
 kubectl wait --timeout=180s --for=condition=Running fabricpeers.hlf.kungfusoftware.es --all
 
@@ -478,21 +478,21 @@ spec:
           port: 7053
       mspID: OrdererMSP
       ordererEndpoints:
-        - orderer0-ord.localho.st:443
-        - orderer1-ord.localho.st:443
-        - orderer2-ord.localho.st:443
+        - ord-node0:7050
+        - ord-node1:7050
+        - ord-node2:7050
       orderersToJoin: []
   orderers:
-    - host: orderer0-ord.localho.st
-      port: 443
+    - host: ord-node0
+      port: 7050
       tlsCert: |-
 ${ORDERER0_TLS_CERT}
-    - host: orderer1-ord.localho.st
-      port: 443
+    - host: ord-node1
+      port: 7050
       tlsCert: |-
 ${ORDERER1_TLS_CERT}
-    - host: orderer2-ord.localho.st
-      port: 443
+    - host: ord-node2
+      port: 7050
       tlsCert: |-
 ${ORDERER2_TLS_CERT}
 
