@@ -806,6 +806,12 @@ kubectl get pods
 
 Seus containeres devem estar com o estado "Running"
 
+## Acessando o Operator UI
+
+No navegador, insira a URL:
+
+operator-ui.localho.st
+
 ## Finalizando
 A essa altura, você deve ter:
 
