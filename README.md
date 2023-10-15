@@ -1,8 +1,3 @@
-      ---
-id: getting-started
-title: Getting started
----
-
 # Hyperledger Fabric Operator
 
 ## Recursos
@@ -763,6 +758,53 @@ kubectl hlf chaincode query --config=resources/network.yaml \
 ## Usando clientes:
 EM BREVE SE DEUS QUISER
 
+# Levantando Operator UI
+
+O HLF Operator UI fornece uma interface gráfica para uma experiência de usuário mais conveniente. O Operator UI torna mais fácil o processo de criar, clonar, supervisionar, editar e deletar os nós de Peers, Orderers e CAs.
+
+Ele consiste de dois componentes
+
+#### Operator API
+Fornece acesso aos dados para serem exibidos pelo Operator UI
+
+- Canais
+- Peers
+- Orderer Nodes
+- Certificate Authorities
+
+#### Operator UI
+Interface gráfica que permite:
+
+- Criar peers
+- Criar CAs
+- Criar orderers
+- Renovar certificados
+
+## Levantando o Operator UI
+
+Primeiro deve-se levantar o Operator API
+```bash
+export API_URL=api-operator.localho.st # URL de acesso
+
+kubectl hlf operatorapi create --name=operator-api --namespace=default --hosts=$API_URL --ingress-class-name=istio
+```
+
+Agora, para levantar o Operator UI
+
+```bash
+export HOST=operator-ui.localho.st
+export API_URL="http://api-operator.localho.st/graphql"
+
+kubectl hlf operatorui create --name=operator-ui --namespace=default --hosts=$HOST --ingress-class-name=istio --api-url=$API_URL
+```
+
+Verifique se eles estão funcionando com o comando a seguir
+
+```
+kubectl get pods
+```
+
+Seus containeres devem estar com o estado "Running"
 
 ## Finalizando
 A essa altura, você deve ter:
