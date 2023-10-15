@@ -645,7 +645,7 @@ EOF
 -----------
 -----------
 
-### Instalação de chaincode Local
+## Instalação de chaincode Local
 
 ### Preparar string / arquivo de conexão para um peer
 
@@ -656,13 +656,17 @@ Para preparar a string de conexão, precisamos:
 3. Obter os certificados usando o usuário criado no passo 2 (enroll)
 4. Anexar o usuário à string de conexão
 
+(Repetir 2, 3 e 4 para Org2)
+
 --------------
 
 1. Obter a string de conexão sem usuários para a organização Org1MSP e OrdererMSP
 
 ```bash
-kubectl hlf inspect -c=demo --output resources/network.yaml -o Org1MSP -o OrdererMSP
+kubectl hlf inspect -c=demo --output resources/network.yaml -o Org1MSP -o Org2MSP -o OrdererMSP
 ```
+
+### Registrar usuário para Org1
 
 2. Registre um usuário no CA para assinatura (registro)
 ```bash
@@ -679,6 +683,18 @@ kubectl hlf ca enroll --name=org1-ca --user=admin --secret=adminpw --mspid Org1M
 4. Anexar o usuário à string de conexão
 ```bash
 kubectl hlf utils adduser --userPath=resources/peer-org1.yaml --config=resources/network.yaml --username=admin --mspid=Org1MSP
+```
+
+### Registrar usuário para Org2 (repetir passos acima para Org2)
+
+```bash
+kubectl hlf ca register --name=org2-ca --user=admin --secret=adminpw --type=admin \
+ --enroll-id enroll --enroll-secret=enrollpw --mspid Org2MSP
+
+kubectl hlf ca enroll --name=org2-ca --user=admin --secret=adminpw --mspid Org2MSP \
+        --ca-name ca  --output resources/peer-org2.yaml
+
+kubectl hlf utils adduser --userPath=resources/peer-org2.yaml --config=resources/network.yaml --username=admin --mspid=Org2MSP
 ```
 
 ### Instalação do chaincode
