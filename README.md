@@ -283,7 +283,6 @@ Verifique se os peers foram implementados e funcionam:
 
 ```bash
 openssl s_client -connect peer0-org1.localho.st:443
-openssl s_client -connect peer1-org1.localho.st:443
 
 ```
 
