@@ -601,8 +601,6 @@ ${ORDERER0_TLS_CERT}
   peersToJoin:
     - name: org1-peer0
       namespace: default
-    - name: org1-peer1
-      namespace: default
 EOF
 
 
@@ -625,7 +623,7 @@ spec:
     - host: org2-peer0.default
       port: 7051
   hlfIdentity:
-    secretKey: org2-peer0.yaml
+    secretKey: org2msp.yaml
     secretName: wallet
     secretNamespace: default
   mspId: Org2MSP
