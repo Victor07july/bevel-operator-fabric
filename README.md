@@ -723,7 +723,7 @@ PACKAGE_ID=fabcar:0c616be7eebace4b3c2aa0890944875f695653dbf80bef7d95f3eed6667b5f
 kubectl hlf chaincode approveformyorg --config=resources/network.yaml --user=admin --peer=org1-peer0.default \
     --package-id=$PACKAGE_ID \
     --version "1.0" --sequence 1 --name=fabcar \
-    --policy="OR('Org1MSP.member')" --channel=demo
+    --policy="AND('Org1MSP.member', 'Org2MSP.member')" --channel=demo
 
 # Organização 2
 
@@ -739,7 +739,7 @@ Fazer o commit do chaincode
 ```bash
 kubectl hlf chaincode commit --config=resources/network.yaml --mspid=Org1MSP --user=admin \
     --version "1.0" --sequence 1 --name=fabcar \
-    --policy="OR('Org1MSP.member')" --channel=demo
+    --policy="AND('Org1MSP.member', 'Org2MSP.member')" --channel=demo
 ```
 
 Testar chaincode
@@ -769,9 +769,10 @@ A essa altura, você deve ter:
 
 
 - Um serviço de ordenação com 3 orderers e CA
-- Organização com 3 peers e CA
+- Organização 1 com 1 peer e CA
+- Organização 2 com 1 peer e CA
 - Um canal chamado "demo"
-- Um chaincode instalado no "peer2" da organização aprovado e commitado
+- Um chaincode instalado nos peers de Org1 e Org2, aprovado e commitado
 
 
 ## Derrubando o ambiente
