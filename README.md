@@ -441,7 +441,7 @@ kubectl hlf ca enroll --name=org1-ca --namespace=default \
     --ca-name ca  --output resources/org1msp.yaml
 ```
 
-### Registrar e matricular identidade Org1MSP
+### Registrar e matricular identidade Org2MSP
 
 ```bash
 # register
