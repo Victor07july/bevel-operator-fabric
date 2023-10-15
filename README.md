@@ -1,4 +1,4 @@
----
+      ---
 id: getting-started
 title: Getting started
 ---
@@ -530,10 +530,6 @@ spec:
       secretNamespace: default
     Org1MSP:
       secretKey: org1msp.yaml
-      secretName: wallet
-      secretNamespace: default
-    Org2MSP:
-      secretKey: org2msp.yaml
       secretName: wallet
       secretNamespace: default
   externalPeerOrganizations: []
