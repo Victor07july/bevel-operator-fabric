@@ -224,7 +224,7 @@ data:
 EOF
 ```
 
-## Criação do CA para Org1
+### Criação do CA para Org1
 
 
 ```bash
@@ -250,23 +250,19 @@ kubectl hlf ca register --name=org1-ca --user=peer --secret=peerpw --type=peer \
 
 ```
 
-### Deploy de peers
+## Deploy de peers para a Org1MSP
 
 ```bash
 kubectl hlf peer create --statedb=couchdb --image=$PEER_IMAGE --version=$PEER_VERSION --storage-class=standard --enroll-id=peer --mspid=Org1MSP \
         --enroll-pw=peerpw --capacity=5Gi --name=org1-peer0 --ca-name=org1-ca.default \
         --hosts=peer0-org1.localho.st --istio-port=443
 
-
-kubectl hlf peer create --statedb=couchdb --image=$PEER_IMAGE --version=$PEER_VERSION --storage-class=standard --enroll-id=peer --mspid=Org1MSP \
-        --enroll-pw=peerpw --capacity=5Gi --name=org1-peer1 --ca-name=org1-ca.default \
-        --hosts=peer1-org1.localho.st --istio-port=443
-
 kubectl wait --timeout=180s --for=condition=Running fabricpeers.hlf.kungfusoftware.es --all
 ```
 
-(ALTERNATIVA) Os peers acima não são capazes de instalar chaincode local, apenas chaincodes CCAS. 
-Para criar peers que instalam chaincode local, será neceessário criar um peer com o atributo kubernetes chaincode builder (k8s builder) com o comando abaixo:
+(ALTERNATIVA) O peer acima não é capaz de instalar chaincode local, apenas chaincodes CCAS. 
+Para criar peers que instalam chaincode local, será neceessário criar um peer com o atributo kubernetes chaincode builder (k8s builder) com o comando abaixo.
+Lembre de escolher apenas um dos peers apresentados para este tutorial.
 ```bash
 
 export PEER_IMAGE=quay.io/kfsoftware/fabric-peer
@@ -276,9 +272,6 @@ export PEER_SECRET=peerpw
 
 kubectl hlf peer create --statedb=couchdb --image=$PEER_IMAGE --version=$PEER_VERSION --storage-class=standard --enroll-id=peer --mspid=$MSP_ORG \
 --enroll-pw=$PEER_SECRET --capacity=5Gi --name=org1-peer0 --ca-name=org1-ca.default --k8s-builder=true --hosts=peer0-org1.localho.st --istio-port=443
-
-kubectl hlf peer create --statedb=couchdb --image=$PEER_IMAGE --version=$PEER_VERSION --storage-class=standard --enroll-id=peer --mspid=$MSP_ORG \
---enroll-pw=$PEER_SECRET --capacity=5Gi --name=org1-peer1 --ca-name=org1-ca.default --k8s-builder=true --hosts=peer1-org1.localho.st --istio-port=443
 
 kubectl wait --timeout=180s --for=condition=Running fabricpeers.hlf.kungfusoftware.es --all
 
@@ -292,6 +285,63 @@ Verifique se os peers foram implementados e funcionam:
 openssl s_client -connect peer0-org1.localho.st:443
 openssl s_client -connect peer1-org1.localho.st:443
 
+```
+
+## Criação do CA para Org2
+
+```bash
+kubectl hlf ca create  --image=$CA_IMAGE --version=$CA_VERSION --storage-class=standard --capacity=1Gi --name=org2-ca \
+    --enroll-id=enroll --enroll-pw=enrollpw --hosts=org2-ca.localho.st --istio-port=443
+
+kubectl wait --timeout=180s --for=condition=Running fabriccas.hlf.kungfusoftware.es --all
+```
+
+Verifique se o CA está funcionando
+
+```bash
+curl -k https://org2-ca.localho.st:443/cainfo
+```
+
+Registre um usuário no CA da Organização 2 (Org2MSP) para os peers
+
+```bash
+# register user in CA for peers
+kubectl hlf ca register --name=org2-ca --user=peer --secret=peerpw --type=peer \
+ --enroll-id enroll --enroll-secret=enrollpw --mspid Org2MSP
+```
+
+# Deploy de peers para Org2 (escolha um apenas)
+
+```bash
+kubectl hlf peer create --statedb=couchdb --image=$PEER_IMAGE --version=$PEER_VERSION --storage-class=standard --enroll-id=peer --mspid=Org2MSP \
+        --enroll-pw=peerpw --capacity=5Gi --name=org2-peer0 --ca-name=org2-ca.default \
+        --hosts=peer0-org2.localho.st --istio-port=443
+
+kubectl wait --timeout=180s --for=condition=Running fabricpeers.hlf.kungfusoftware.es --all
+```
+
+Alternativa com k8s-builder
+
+```bash
+
+export PEER_IMAGE=quay.io/kfsoftware/fabric-peer
+export PEER_VERSION=2.4.1-v0.0.3
+export MSP_ORG=Org2MSP
+export PEER_SECRET=peerpw
+
+kubectl hlf peer create --statedb=couchdb --image=$PEER_IMAGE --version=$PEER_VERSION --storage-class=standard --enroll-id=peer --mspid=$MSP_ORG \
+--enroll-pw=$PEER_SECRET --capacity=5Gi --name=org2-peer0 --ca-name=org2-ca.default --k8s-builder=true --hosts=peer0-org2.localho.st --istio-port=443
+
+kubectl wait --timeout=180s --for=condition=Running fabricpeers.hlf.kungfusoftware.es --all
+
+# leva alguns minutos
+
+```
+
+Verifique se o peer funciona
+
+```
+openssl s_client -connect peer0-org2.localho.st:443
 ```
 
 ## Deploy de uma organização `Orderer`
@@ -392,6 +442,20 @@ kubectl hlf ca enroll --name=org1-ca --namespace=default \
     --ca-name ca  --output resources/org1msp.yaml
 ```
 
+### Registrar e matricular identidade Org1MSP
+
+```bash
+# register
+kubectl hlf ca register --name=org2-ca --namespace=default --user=admin --secret=adminpw \
+    --type=admin --enroll-id enroll --enroll-secret=enrollpw --mspid=Org2MSP
+
+# enroll
+kubectl hlf ca enroll --name=org2-ca --namespace=default \
+    --user=admin --secret=adminpw --mspid Org2MSP \
+    --ca-name ca  --output resources/org2msp.yaml
+
+```
+
 ### Criar o segredo
 
 ```bash
@@ -399,6 +463,7 @@ kubectl hlf ca enroll --name=org1-ca --namespace=default \
 
 kubectl create secret generic wallet --namespace=default \
         --from-file=org1msp.yaml=$PWD/resources/org1msp.yaml \
+        --from-file=org2msp.yaml=$PWD/resources/org2msp.yaml \
         --from-file=orderermsp.yaml=$PWD/resources/orderermsp.yaml
 ```
 
@@ -456,6 +521,9 @@ spec:
     - mspID: Org1MSP
       caName: "org1-ca"
       caNamespace: "default"
+    - mspID: Org2MSP
+      caName: "org2-ca"
+      caNamespace: "default" 
   identities:
     OrdererMSP:
       secretKey: orderermsp.yaml
@@ -463,6 +531,10 @@ spec:
       secretNamespace: default
     Org1MSP:
       secretKey: org1msp.yaml
+      secretName: wallet
+      secretNamespace: default
+    Org2MSP:
+      secretKey: org2msp.yaml
       secretName: wallet
       secretNamespace: default
   externalPeerOrganizations: []
@@ -500,7 +572,7 @@ EOF
 
 ```
 
-## Join peer to the channel
+## Inserir peers de Org1 no canal
 
 ```bash
 
@@ -534,6 +606,40 @@ ${ORDERER0_TLS_CERT}
       namespace: default
 EOF
 
+
+```
+
+## Inserir peers de Org2 no canal
+
+```bash
+
+export IDENT_8=$(printf "%8s" "")
+export ORDERER0_TLS_CERT=$(kubectl get fabricorderernodes ord-node0 -o=jsonpath='{.status.tlsCert}' | sed -e "s/^/${IDENT_8}/" )
+
+kubectl apply -f - <<EOF
+apiVersion: hlf.kungfusoftware.es/v1alpha1
+kind: FabricFollowerChannel
+metadata:
+  name: demo-org2msp
+spec:
+  anchorPeers:
+    - host: org2-peer0.default
+      port: 7051
+  hlfIdentity:
+    secretKey: org2-peer0.yaml
+    secretName: wallet
+    secretNamespace: default
+  mspId: Org2MSP
+  name: demo
+  externalPeersToJoin: []
+  orderers:
+    - certificate: |
+${ORDERER0_TLS_CERT}
+      url: grpcs://orderer0-ord.localho.st:443
+  peersToJoin:
+    - name: org2-peer0
+      namespace: default
+EOF
 
 ```
 
@@ -586,7 +692,7 @@ kubectl hlf chaincode install --path=./fixtures/chaincodes/fabcar/go \
     --config=resources/network.yaml --language=golang --label=fabcar --user=admin --peer=org1-peer0.default
 
 kubectl hlf chaincode install --path=./fixtures/chaincodes/fabcar/go \
-    --config=resources/network.yaml --language=golang --label=fabcar --user=admin --peer=org1-peer1.default
+    --config=resources/network.yaml --language=golang --label=fabcar --user=admin --peer=org2-peer0.default
 
 # this can take 3-4 minutes
 ```
@@ -596,17 +702,27 @@ Verificação de chaincodes instalados
 ```bash
 kubectl hlf chaincode queryinstalled --config=resources/network.yaml --user=admin --peer=org1-peer0.default
 
-kubectl hlf chaincode queryinstalled --config=resources/network.yaml --user=admin --peer=org1-peer1.default
+kubectl hlf chaincode queryinstalled --config=resources/network.yaml --user=admin --peer=org2-peer0.default
 ```
 
 Aprovar chaincode
 
 ```bash
+#Organização 1
+
 PACKAGE_ID=fabcar:0c616be7eebace4b3c2aa0890944875f695653dbf80bef7d95f3eed6667b5f40 # replace it with the package id of your chaincode
 kubectl hlf chaincode approveformyorg --config=resources/network.yaml --user=admin --peer=org1-peer0.default \
     --package-id=$PACKAGE_ID \
     --version "1.0" --sequence 1 --name=fabcar \
     --policy="OR('Org1MSP.member')" --channel=demo
+
+# Organização 2
+
+PACKAGE_ID=fabcar:0c616be7eebace4b3c2aa0890944875f695653dbf80bef7d95f3eed6667b5f40 # replace it with the package id of your chaincode
+kubectl hlf chaincode approveformyorg --config=resources/network.yaml --user=admin --peer=org2-peer0.default \
+    --package-id=$PACKAGE_ID \
+    --version "1.0" --sequence 1 --name=fabcar \
+    --policy="AND('Org1MSP.member', 'Org2MSP.member')" --channel=demo
 ```
 
 Fazer o commit do chaincode
