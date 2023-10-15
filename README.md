@@ -250,7 +250,7 @@ kubectl hlf ca register --name=org1-ca --user=peer --secret=peerpw --type=peer \
 
 ```
 
-## Deploy de peers para a Org1MSP
+### Deploy de peers para a Org1MSP
 
 ```bash
 kubectl hlf peer create --statedb=couchdb --image=$PEER_IMAGE --version=$PEER_VERSION --storage-class=standard --enroll-id=peer --mspid=Org1MSP \
@@ -287,7 +287,7 @@ openssl s_client -connect peer1-org1.localho.st:443
 
 ```
 
-## Criação do CA para Org2
+### Criação do CA para Org2
 
 ```bash
 kubectl hlf ca create  --image=$CA_IMAGE --version=$CA_VERSION --storage-class=standard --capacity=1Gi --name=org2-ca \
@@ -310,7 +310,7 @@ kubectl hlf ca register --name=org2-ca --user=peer --secret=peerpw --type=peer \
  --enroll-id enroll --enroll-secret=enrollpw --mspid Org2MSP
 ```
 
-# Deploy de peers para Org2 (escolha um apenas)
+### Deploy de peers para Org2 (escolha um apenas)
 
 ```bash
 kubectl hlf peer create --statedb=couchdb --image=$PEER_IMAGE --version=$PEER_VERSION --storage-class=standard --enroll-id=peer --mspid=Org2MSP \
@@ -344,7 +344,7 @@ Verifique se o peer funciona
 openssl s_client -connect peer0-org2.localho.st:443
 ```
 
-## Deploy de uma organização `Orderer`
+### Deploy de uma organização `Orderer`
 
 para fazer o deploy de uma organização orderer, temos que:
 
@@ -650,7 +650,7 @@ EOF
 
 ### Instalação de chaincode Local
 
-## Preparar string / arquivo de conexão para um peer
+### Preparar string / arquivo de conexão para um peer
 
 Para preparar a string de conexão, precisamos:
 
@@ -684,7 +684,7 @@ kubectl hlf ca enroll --name=org1-ca --user=admin --secret=adminpw --mspid Org1M
 kubectl hlf utils adduser --userPath=resources/peer-org1.yaml --config=resources/network.yaml --username=admin --mspid=Org1MSP
 ```
 
-## Instalação do chaincode
+### Instalação do chaincode
 Com o arquivo de conexão preparado, vamos instalar o chaincode no peer que possua o atributo k8s-builder, como explicado no passo de deploy de peers
 
 ```bash
