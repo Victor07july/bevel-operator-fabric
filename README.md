@@ -815,10 +815,10 @@ A essa altura, você deve ter:
 
 
 - Um serviço de ordenação com 3 orderers e CA
-- Organização 1 com 1 peer e CA
-- Organização 2 com 1 peer e CA
+- Organização INMETRO com 1 peer e CA
+- Organização PUC com 1 peer e CA
 - Um canal chamado "demo"
-- Um chaincode instalado nos peers de Org1 e Org2, aprovado e commitado
+- Um chaincode instalado nos peers do INMETRO e PUC, aprovado e "commitado"
 
 
 ## Derrubando o ambiente
