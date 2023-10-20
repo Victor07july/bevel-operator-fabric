@@ -219,13 +219,13 @@ data:
 EOF
 ```
 
-### Criação do CA para Org1
+### Criação do CA para INMETRO
 
 
 ```bash
 
-kubectl hlf ca create  --image=$CA_IMAGE --version=$CA_VERSION --storage-class=standard --capacity=1Gi --name=org1-ca \
-    --enroll-id=enroll --enroll-pw=enrollpw --hosts=org1-ca.localho.st --istio-port=443
+kubectl hlf ca create  --image=$CA_IMAGE --version=$CA_VERSION --storage-class=standard --capacity=1Gi --name=inmetro-ca \
+    --enroll-id=enroll --enroll-pw=enrollpw --hosts=inmetro-ca.localho.st --istio-port=443
 
 kubectl wait --timeout=180s --for=condition=Running fabriccas.hlf.kungfusoftware.es --all
 ```
@@ -233,24 +233,24 @@ kubectl wait --timeout=180s --for=condition=Running fabriccas.hlf.kungfusoftware
 Verifique se o CA foi implementado e funciona:
 
 ```bash
-curl -k https://org1-ca.localho.st:443/cainfo
+curl -k https://inmetro-ca.localho.st:443/cainfo
 ```
 
-Registre um usuário peer no CA da Organização 1 (Org1MSP)
+Registre um usuário peer no CA da Organização INMETRO
 
 ```bash
 # register user in CA for peers
-kubectl hlf ca register --name=org1-ca --user=peer --secret=peerpw --type=peer \
- --enroll-id enroll --enroll-secret=enrollpw --mspid Org1MSP
+kubectl hlf ca register --name=inmetro-ca --user=peer --secret=peerpw --type=peer \
+ --enroll-id enroll --enroll-secret=enrollpw --mspid INMETROMSP
 
 ```
 
-### Deploy de peers para Org1 (escolha um apenas)
+### Deploy de peers para a organização INMETRO (escolha um apenas)
 
 ```bash
-kubectl hlf peer create --statedb=couchdb --image=$PEER_IMAGE --version=$PEER_VERSION --storage-class=standard --enroll-id=peer --mspid=Org1MSP \
-        --enroll-pw=peerpw --capacity=5Gi --name=org1-peer0 --ca-name=org1-ca.default \
-        --hosts=peer0-org1.localho.st --istio-port=443
+kubectl hlf peer create --statedb=couchdb --image=$PEER_IMAGE --version=$PEER_VERSION --storage-class=standard --enroll-id=peer --mspid=INMETROMSP \
+        --enroll-pw=peerpw --capacity=5Gi --name=inmetro-peer0 --ca-name=inmetro-ca.default \
+        --hosts=peer0-inmetro.localho.st --istio-port=443
 
 kubectl wait --timeout=180s --for=condition=Running fabricpeers.hlf.kungfusoftware.es --all
 ```
@@ -262,11 +262,11 @@ Lembre de escolher apenas um dos peers apresentados para este tutorial.
 
 export PEER_IMAGE=quay.io/kfsoftware/fabric-peer
 export PEER_VERSION=2.4.1-v0.0.3
-export MSP_ORG=Org1MSP
+export MSP_ORG=INMETROMSP
 export PEER_SECRET=peerpw
 
 kubectl hlf peer create --statedb=couchdb --image=$PEER_IMAGE --version=$PEER_VERSION --storage-class=standard --enroll-id=peer --mspid=$MSP_ORG \
---enroll-pw=$PEER_SECRET --capacity=5Gi --name=org1-peer0 --ca-name=org1-ca.default --k8s-builder=true --hosts=peer0-org1.localho.st --istio-port=443
+--enroll-pw=$PEER_SECRET --capacity=5Gi --name=inmetro-peer0 --ca-name=inmetro-ca.default --k8s-builder=true --hosts=peer0-inmetro.localho.st --istio-port=443
 
 kubectl wait --timeout=180s --for=condition=Running fabricpeers.hlf.kungfusoftware.es --all
 
@@ -277,15 +277,15 @@ kubectl wait --timeout=180s --for=condition=Running fabricpeers.hlf.kungfusoftwa
 Verifique se os peers foram implementados e funcionam:
 
 ```bash
-openssl s_client -connect peer0-org1.localho.st:443
+openssl s_client -connect peer0-inmetro.localho.st:443
 
 ```
 
-### Criação do CA para Org2
+### Criação do CA para a organização PUC
 
 ```bash
-kubectl hlf ca create  --image=$CA_IMAGE --version=$CA_VERSION --storage-class=standard --capacity=1Gi --name=org2-ca \
-    --enroll-id=enroll --enroll-pw=enrollpw --hosts=org2-ca.localho.st --istio-port=443
+kubectl hlf ca create  --image=$CA_IMAGE --version=$CA_VERSION --storage-class=standard --capacity=1Gi --name=puc-ca \
+    --enroll-id=enroll --enroll-pw=enrollpw --hosts=puc-ca.localho.st --istio-port=443
 
 kubectl wait --timeout=180s --for=condition=Running fabriccas.hlf.kungfusoftware.es --all
 ```
@@ -293,23 +293,23 @@ kubectl wait --timeout=180s --for=condition=Running fabriccas.hlf.kungfusoftware
 Verifique se o CA está funcionando
 
 ```bash
-curl -k https://org2-ca.localho.st:443/cainfo
+curl -k https://puc-ca.localho.st:443/cainfo
 ```
 
-Registre um usuário no CA da Organização 2 (Org2MSP) para os peers
+Registre um usuário no CA da organização PUC para os peers
 
 ```bash
 # register user in CA for peers
-kubectl hlf ca register --name=org2-ca --user=peer --secret=peerpw --type=peer \
- --enroll-id enroll --enroll-secret=enrollpw --mspid Org2MSP
+kubectl hlf ca register --name=puc-ca --user=peer --secret=peerpw --type=peer \
+ --enroll-id enroll --enroll-secret=enrollpw --mspid PUCMSP
 ```
 
-### Deploy de peers para Org2 (escolha um apenas)
+### Deploy de peers para a organização PUC (escolha um apenas)
 
 ```bash
-kubectl hlf peer create --statedb=couchdb --image=$PEER_IMAGE --version=$PEER_VERSION --storage-class=standard --enroll-id=peer --mspid=Org2MSP \
-        --enroll-pw=peerpw --capacity=5Gi --name=org2-peer0 --ca-name=org2-ca.default \
-        --hosts=peer0-org2.localho.st --istio-port=443
+kubectl hlf peer create --statedb=couchdb --image=$PEER_IMAGE --version=$PEER_VERSION --storage-class=standard --enroll-id=peer --mspid=PUCMSP \
+        --enroll-pw=peerpw --capacity=5Gi --name=puc-peer0 --ca-name=puc-ca.default \
+        --hosts=puc-org2.localho.st --istio-port=443
 
 kubectl wait --timeout=180s --for=condition=Running fabricpeers.hlf.kungfusoftware.es --all
 ```
@@ -320,11 +320,11 @@ Alternativa com k8s-builder
 
 export PEER_IMAGE=quay.io/kfsoftware/fabric-peer
 export PEER_VERSION=2.4.1-v0.0.3
-export MSP_ORG=Org2MSP
+export MSP_ORG=PUCMSP
 export PEER_SECRET=peerpw
 
 kubectl hlf peer create --statedb=couchdb --image=$PEER_IMAGE --version=$PEER_VERSION --storage-class=standard --enroll-id=peer --mspid=$MSP_ORG \
---enroll-pw=$PEER_SECRET --capacity=5Gi --name=org2-peer0 --ca-name=org2-ca.default --k8s-builder=true --hosts=peer0-org2.localho.st --istio-port=443
+--enroll-pw=$PEER_SECRET --capacity=5Gi --name=puc-peer0 --ca-name=puc-ca.default --k8s-builder=true --hosts=peer0-puc.localho.st --istio-port=443
 
 kubectl wait --timeout=180s --for=condition=Running fabricpeers.hlf.kungfusoftware.es --all
 
@@ -335,7 +335,7 @@ kubectl wait --timeout=180s --for=condition=Running fabricpeers.hlf.kungfusoftwa
 Verifique se o peer funciona
 
 ```
-openssl s_client -connect peer0-org2.localho.st:443
+openssl s_client -connect peer0-puc.localho.st:443
 ```
 
 ### Deploy de uma organização `Orderer`
@@ -423,49 +423,47 @@ kubectl hlf ca enroll --name=ord-ca --namespace=default \
 ```
 
 
-### Registrar e matricular identidade Org1MSP
+### Registrar e matricular identidade INMETROMSP
 
 ```bash
 # register
-kubectl hlf ca register --name=org1-ca --namespace=default --user=admin --secret=adminpw \
-    --type=admin --enroll-id enroll --enroll-secret=enrollpw --mspid=Org1MSP
+kubectl hlf ca register --name=inmetro-ca --namespace=default --user=admin --secret=adminpw \
+    --type=admin --enroll-id enroll --enroll-secret=enrollpw --mspid=INMETROMSP
 
 # enroll
-kubectl hlf ca enroll --name=org1-ca --namespace=default \
-    --user=admin --secret=adminpw --mspid Org1MSP \
-    --ca-name ca  --output resources/org1msp.yaml
+kubectl hlf ca enroll --name=inmetro-ca --namespace=default \
+    --user=admin --secret=adminpw --mspid INMETROMSP \
+    --ca-name ca  --output resources/inmetromsp.yaml
 ```
 
-### Registrar e matricular identidade Org2MSP
+### Registrar e matricular identidade PUCMSP
 
 ```bash
 # register
-kubectl hlf ca register --name=org2-ca --namespace=default --user=admin --secret=adminpw \
-    --type=admin --enroll-id enroll --enroll-secret=enrollpw --mspid=Org2MSP
+kubectl hlf ca register --name=puc-ca --namespace=default --user=admin --secret=adminpw \
+    --type=admin --enroll-id enroll --enroll-secret=enrollpw --mspid=PUCMSP
 
 # enroll
-kubectl hlf ca enroll --name=org2-ca --namespace=default \
-    --user=admin --secret=adminpw --mspid Org2MSP \
-    --ca-name ca  --output resources/org2msp.yaml
+kubectl hlf ca enroll --name=puc-ca --namespace=default \
+    --user=admin --secret=adminpw --mspid PUCMSP \
+    --ca-name ca  --output resources/pucmsp.yaml
 
 ```
 
 ### Criar o segredo
 
 ```bash
-
-
 kubectl create secret generic wallet --namespace=default \
-        --from-file=org1msp.yaml=$PWD/resources/org1msp.yaml \
-        --from-file=org2msp.yaml=$PWD/resources/org2msp.yaml \
+        --from-file=inmetromsp.yaml=$PWD/resources/inmetromsp.yaml \
+        --from-file=pucmsp.yaml=$PWD/resources/pucmsp.yaml \
         --from-file=orderermsp.yaml=$PWD/resources/orderermsp.yaml
 ```
 
 ### Create main channel
 
 ```bash
-export PEER_ORG_SIGN_CERT=$(kubectl get fabriccas org1-ca -o=jsonpath='{.status.ca_cert}')
-export PEER_ORG_TLS_CERT=$(kubectl get fabriccas org1-ca -o=jsonpath='{.status.tlsca_cert}')
+export PEER_ORG_SIGN_CERT=$(kubectl get fabriccas inmetro-ca -o=jsonpath='{.status.ca_cert}')
+export PEER_ORG_TLS_CERT=$(kubectl get fabriccas inmetro-ca -o=jsonpath='{.status.tlsca_cert}')
 export IDENT_8=$(printf "%8s" "")
 export ORDERER_TLS_CERT=$(kubectl get fabriccas ord-ca -o=jsonpath='{.status.tlsca_cert}' | sed -e "s/^/${IDENT_8}/" )
 export ORDERER0_TLS_CERT=$(kubectl get fabricorderernodes ord-node0 -o=jsonpath='{.status.tlsCert}' | sed -e "s/^/${IDENT_8}/" )
@@ -482,7 +480,7 @@ spec:
   adminOrdererOrganizations:
     - mspID: OrdererMSP
   adminPeerOrganizations:
-    - mspID: Org1MSP
+    - mspID: INMETROMSP
   channelConfig:
     application:
       acls: null
@@ -512,19 +510,19 @@ spec:
     policies: null
   externalOrdererOrganizations: []
   peerOrganizations:
-    - mspID: Org1MSP
-      caName: "org1-ca"
+    - mspID: INMETROMSP
+      caName: "inmetro-ca"
       caNamespace: "default"
-    - mspID: Org2MSP
-      caName: "org2-ca"
+    - mspID: PUCMSP
+      caName: "puc-ca"
       caNamespace: "default" 
   identities:
     OrdererMSP:
       secretKey: orderermsp.yaml
       secretName: wallet
       secretNamespace: default
-    Org1MSP:
-      secretKey: org1msp.yaml
+    INMETROMSP:
+      secretKey: inmetromsp.yaml
       secretName: wallet
       secretNamespace: default
   externalPeerOrganizations: []
@@ -562,7 +560,7 @@ EOF
 
 ```
 
-## Inserir peers de Org1 no canal
+## Inserir peers do INMETRO no canal
 
 ```bash
 
@@ -573,16 +571,16 @@ kubectl apply -f - <<EOF
 apiVersion: hlf.kungfusoftware.es/v1alpha1
 kind: FabricFollowerChannel
 metadata:
-  name: demo-org1msp
+  name: demo-inmetromsp
 spec:
   anchorPeers:
-    - host: org1-peer0.default
+    - host: inmetro-peer0.default
       port: 7051
   hlfIdentity:
-    secretKey: org1msp.yaml
+    secretKey: inmetromsp.yaml
     secretName: wallet
     secretNamespace: default
-  mspId: Org1MSP
+  mspId: INMETROMSP
   name: demo
   externalPeersToJoin: []
   orderers:
@@ -590,14 +588,14 @@ spec:
 ${ORDERER0_TLS_CERT}
       url: grpcs://ord-node0.default:7050
   peersToJoin:
-    - name: org1-peer0
+    - name: inmetro-peer0
       namespace: default
 EOF
 
 
 ```
 
-## Inserir peers de Org2 no canal
+## Inserir peers da PUC no canal
 
 ```bash
 
@@ -608,16 +606,16 @@ kubectl apply -f - <<EOF
 apiVersion: hlf.kungfusoftware.es/v1alpha1
 kind: FabricFollowerChannel
 metadata:
-  name: demo-org2msp
+  name: demo-pucmsp
 spec:
   anchorPeers:
-    - host: org2-peer0.default
+    - host: puc-peer0.default
       port: 7051
   hlfIdentity:
-    secretKey: org2msp.yaml
+    secretKey: pucmsp.yaml
     secretName: wallet
     secretNamespace: default
-  mspId: Org2MSP
+  mspId: PUCMSP
   name: demo
   externalPeersToJoin: []
   orderers:
@@ -625,7 +623,7 @@ spec:
 ${ORDERER0_TLS_CERT}
       url: grpcs://orderer0-ord.localho.st:443
   peersToJoin:
-    - name: org2-peer0
+    - name: puc-peer0
       namespace: default
 EOF
 
@@ -654,38 +652,38 @@ Para preparar a string de conexão, precisamos:
 1. Obter a string de conexão sem usuários para a organização Org1MSP e OrdererMSP
 
 ```bash
-kubectl hlf inspect -c=demo --output resources/network.yaml -o Org1MSP -o Org2MSP -o OrdererMSP
+kubectl hlf inspect -c=demo --output resources/network.yaml -o INMETROMSP -o PUCMSP -o OrdererMSP
 ```
 
-### Registrar usuário para Org1
+### Registrar usuário para INMETRO
 
 2. Registre um usuário no CA para assinatura (registro)
 ```bash
-kubectl hlf ca register --name=org1-ca --user=admin --secret=adminpw --type=admin \
- --enroll-id enroll --enroll-secret=enrollpw --mspid Org1MSP  
+kubectl hlf ca register --name=inmetro-ca --user=admin --secret=adminpw --type=admin \
+ --enroll-id enroll --enroll-secret=enrollpw --mspid INMETROMSP  
 ```
 
 3. Obter os certificados usando o usuário criado no passo 2 (enroll)
 ```bash
-kubectl hlf ca enroll --name=org1-ca --user=admin --secret=adminpw --mspid Org1MSP \
-        --ca-name ca  --output resources/peer-org1.yaml
+kubectl hlf ca enroll --name=inmetro-ca --user=admin --secret=adminpw --mspid INMETROMSP \
+        --ca-name ca  --output resources/peer-inmetro.yaml
 ```
 
 4. Anexar o usuário à string de conexão
 ```bash
-kubectl hlf utils adduser --userPath=resources/peer-org1.yaml --config=resources/network.yaml --username=admin --mspid=Org1MSP
+kubectl hlf utils adduser --userPath=resources/peer-inmetro.yaml --config=resources/network.yaml --username=admin --mspid=INMETROMSP
 ```
 
-### Registrar usuário para Org2 (repetir passos acima para Org2)
+### Registrar usuário para PUC (repetir passos acima, mas para a PUC)
 
 ```bash
-kubectl hlf ca register --name=org2-ca --user=admin --secret=adminpw --type=admin \
- --enroll-id enroll --enroll-secret=enrollpw --mspid Org2MSP
+kubectl hlf ca register --name=puc-ca --user=admin --secret=adminpw --type=admin \
+ --enroll-id enroll --enroll-secret=enrollpw --mspid PUCMSP
 
-kubectl hlf ca enroll --name=org2-ca --user=admin --secret=adminpw --mspid Org2MSP \
-        --ca-name ca  --output resources/peer-org2.yaml
+kubectl hlf ca enroll --name=puc-ca --user=admin --secret=adminpw --mspid PUCMSP \
+        --ca-name ca  --output resources/peer-puc.yaml
 
-kubectl hlf utils adduser --userPath=resources/peer-org2.yaml --config=resources/network.yaml --username=admin --mspid=Org2MSP
+kubectl hlf utils adduser --userPath=resources/peer-puc.yaml --config=resources/network.yaml --username=admin --mspid=PUCMSP
 ```
 
 ### Instalação do chaincode
@@ -693,10 +691,10 @@ Com o arquivo de conexão preparado, vamos instalar o chaincode no peer que poss
 
 ```bash
 kubectl hlf chaincode install --path=./fixtures/chaincodes/fabcar/go \
-    --config=resources/network.yaml --language=golang --label=fabcar --user=admin --peer=org1-peer0.default
+    --config=resources/network.yaml --language=golang --label=fabcar --user=admin --peer=inmetro-peer0.default
 
 kubectl hlf chaincode install --path=./fixtures/chaincodes/fabcar/go \
-    --config=resources/network.yaml --language=golang --label=fabcar --user=admin --peer=org2-peer0.default
+    --config=resources/network.yaml --language=golang --label=fabcar --user=admin --peer=puc-peer0.default
 
 # this can take 3-4 minutes
 ```
@@ -704,44 +702,44 @@ kubectl hlf chaincode install --path=./fixtures/chaincodes/fabcar/go \
 Verificação de chaincodes instalados
 
 ```bash
-kubectl hlf chaincode queryinstalled --config=resources/network.yaml --user=admin --peer=org1-peer0.default
+kubectl hlf chaincode queryinstalled --config=resources/network.yaml --user=admin --peer=inmetro-peer0.default
 
-kubectl hlf chaincode queryinstalled --config=resources/network.yaml --user=admin --peer=org2-peer0.default
+kubectl hlf chaincode queryinstalled --config=resources/network.yaml --user=admin --peer=puc-peer0.default
 ```
 
 Aprovar chaincode
 
 ```bash
-#Organização 1
+#Organização INMETRO
 
 PACKAGE_ID=fabcar:0c616be7eebace4b3c2aa0890944875f695653dbf80bef7d95f3eed6667b5f40 # replace it with the package id of your chaincode
-kubectl hlf chaincode approveformyorg --config=resources/network.yaml --user=admin --peer=org1-peer0.default \
+kubectl hlf chaincode approveformyorg --config=resources/network.yaml --user=admin --peer=inmetro-peer0.default \
     --package-id=$PACKAGE_ID \
     --version "1.0" --sequence 1 --name=fabcar \
-    --policy="AND('Org1MSP.member', 'Org2MSP.member')" --channel=demo
+    --policy="AND('INMETROMSP.member', 'PUCMSP.member')" --channel=demo
 
-# Organização 2
+# Organização PUC
 
 PACKAGE_ID=fabcar:0c616be7eebace4b3c2aa0890944875f695653dbf80bef7d95f3eed6667b5f40 # replace it with the package id of your chaincode
-kubectl hlf chaincode approveformyorg --config=resources/network.yaml --user=admin --peer=org2-peer0.default \
+kubectl hlf chaincode approveformyorg --config=resources/network.yaml --user=admin --peer=puc-peer0.default \
     --package-id=$PACKAGE_ID \
     --version "1.0" --sequence 1 --name=fabcar \
-    --policy="AND('Org1MSP.member', 'Org2MSP.member')" --channel=demo
+    --policy="AND('INMETROMSP.member', 'PUCMSP.member')" --channel=demo
 ```
 
 Fazer o commit do chaincode
 
 ```bash
-kubectl hlf chaincode commit --config=resources/network.yaml --mspid=Org1MSP --user=admin \
+kubectl hlf chaincode commit --config=resources/network.yaml --mspid=INMETROMSP --user=admin \
     --version "1.0" --sequence 1 --name=fabcar \
-    --policy="AND('Org1MSP.member', 'Org2MSP.member')" --channel=demo
+    --policy="AND('INMETROMSP.member', 'PUCMSP.member')" --channel=demo
 ```
 
 Testar chaincode
 
 ```bash
 kubectl hlf chaincode invoke --config=resources/network.yaml \
-    --user=admin --peer=org1-peer0.default \
+    --user=admin --peer=puc-peer0.default \
     --chaincode=fabcar --channel=demo \
     --fcn=initLedger -a '[]'
 ```
@@ -750,7 +748,7 @@ Fazer query de todos os carros / assets
 
 ```bash
 kubectl hlf chaincode query --config=resources/network.yaml \
-    --user=admin --peer=org1-peer0.default \
+    --user=admin --peer=inmetro-peer0.default \
     --chaincode=fabcar --channel=demo \
     --fcn=QueryAllCars -a '[]'
 ```
