@@ -1,0 +1,475 @@
+{
+   "dates": [
+      "2023-09-23 16:30:00"
+   ],
+   "data": [
+      {
+         "name": "Solar radiation",
+         "name_original": "Solar radiation",
+         "type": "Sensor",
+         "decimals": 0,
+         "unit": "W\/m2",
+         "ch": 0,
+         "code": 600,
+         "group": 4,
+         "serial": "x",
+         "mac": "x",
+         "registered": "2023-05-31 17:00:11",
+         "vals": {},
+         "aggr": [
+            "avg"
+         ],
+         "values": {
+            "avg": [
+               24
+            ]
+         }
+      },
+      {
+         "name": "Solar Panel",
+         "name_original": "Solar Panel",
+         "type": "Sensor",
+         "decimals": 0,
+         "unit": "mV",
+         "ch": 4,
+         "code": 30,
+         "group": 7,
+         "serial": "x",
+         "mac": "x",
+         "registered": "2023-05-31 17:00:11",
+         "vals": {},
+         "aggr": [
+            "last"
+         ],
+         "values": {
+            "last": [
+               3695
+            ]
+         }
+      },
+      {
+         "name": "Precipitation",
+         "name_original": "Precipitation",
+         "type": "Sensor",
+         "decimals": 1,
+         "unit": "mm",
+         "ch": 5,
+         "code": 6,
+         "group": 5,
+         "serial": "x",
+         "mac": "x",
+         "registered": "2023-05-31 17:00:11",
+         "vals": {},
+         "aggr": [
+            "sum"
+         ],
+         "values": {
+            "sum": [
+               0
+            ]
+         }
+      },
+      {
+         "name": "Battery",
+         "name_original": "Battery",
+         "type": "Sensor",
+         "decimals": 0,
+         "unit": "mV",
+         "ch": 7,
+         "code": 7,
+         "group": 7,
+         "serial": "x",
+         "mac": "x",
+         "registered": "2023-05-31 17:00:11",
+         "vals": {},
+         "aggr": [
+            "last"
+         ],
+         "values": {
+            "last": [
+               6371
+            ]
+         }
+      },
+      {
+         "name": "Leaf Wetness",
+         "name_original": "Leaf Wetness",
+         "type": "Sensor",
+         "decimals": 0,
+         "unit": "min",
+         "ch": 8,
+         "code": 4,
+         "group": 12,
+         "serial": "x",
+         "mac": "x",
+         "registered": "2023-05-31 17:00:11",
+         "vals": {},
+         "aggr": [
+            "time"
+         ],
+         "values": {
+            "time": [
+               0
+            ]
+         }
+      },
+      {
+         "name": "HC Serial Number",
+         "name_original": "HC Serial Number",
+         "type": "Sensor",
+         "decimals": 0,
+         "unit": "",
+         "ch": 17,
+         "code": 508,
+         "group": 61,
+         "serial": "x",
+         "mac": "x",
+         "registered": "2023-05-31 17:00:11",
+         "vals": {},
+         "aggr": [
+            "last"
+         ],
+         "values": {
+            "last": [
+               20268418
+            ]
+         }
+      },
+      {
+         "name": "HC Air temperature",
+         "name_original": "HC Air temperature",
+         "type": "Sensor",
+         "decimals": 2,
+         "unit": "\u00b0C",
+         "ch": 18,
+         "code": 506,
+         "group": 1,
+         "serial": "x",
+         "mac": "x",
+         "registered": "2023-05-31 17:00:11",
+         "vals": {},
+         "aggr": [
+            "avg",
+            "max",
+            "min"
+         ],
+         "values": {
+            "avg": [
+               28.68
+            ],
+            "max": [
+               28.88
+            ],
+            "min": [
+               28.46
+            ]
+         }
+      },
+      {
+         "name": "HC Relative humidity",
+         "name_original": "HC Relative humidity",
+         "type": "Sensor",
+         "decimals": 2,
+         "unit": "%",
+         "ch": 19,
+         "code": 507,
+         "group": 2,
+         "serial": "x",
+         "mac": "x",
+         "registered": "2023-05-31 17:00:11",
+         "vals": {},
+         "aggr": [
+            "avg",
+            "max",
+            "min"
+         ],
+         "values": {
+            "avg": [
+               58.94
+            ],
+            "max": [
+               59.83
+            ],
+            "min": [
+               58.36
+            ]
+         }
+      },
+      {
+         "name": "Dew Point",
+         "name_original": "Dew Point",
+         "type": "Sensor",
+         "decimals": 1,
+         "unit": "\u00b0C",
+         "ch": 20,
+         "code": 21,
+         "group": 17,
+         "serial": "x",
+         "mac": "x",
+         "registered": "2023-05-31 17:00:11",
+         "vals": {},
+         "aggr": [
+            "avg",
+            "min"
+         ],
+         "values": {
+            "avg": [
+               19.8
+            ],
+            "min": [
+               19.8
+            ]
+         }
+      },
+      {
+         "name": "VPD",
+         "name_original": "VPD",
+         "type": "Sensor",
+         "decimals": 2,
+         "unit": "kPa",
+         "ch": 26,
+         "code": 25,
+         "group": 22,
+         "serial": "x",
+         "mac": "x",
+         "registered": "2023-05-31 17:00:11",
+         "vals": {},
+         "aggr": [
+            "avg",
+            "min"
+         ],
+         "values": {
+            "avg": [
+               1.6
+            ],
+            "min": [
+               1.55
+            ]
+         }
+      },
+      {
+         "name": "DeltaT",
+         "name_original": "DeltaT",
+         "type": "Sensor",
+         "decimals": 0,
+         "unit": "\u00b0C",
+         "ch": 35,
+         "code": 27,
+         "group": 68,
+         "serial": "x",
+         "mac": "x",
+         "registered": "2023-05-31 17:00:11",
+         "vals": {},
+         "aggr": [
+            "avg",
+            "max",
+            "min"
+         ],
+         "values": {
+            "avg": [
+               6
+            ],
+            "max": [
+               6
+            ],
+            "min": [
+               6
+            ]
+         }
+      },
+      {
+         "name": "Sensor board battery",
+         "name_original": "Sensor board battery",
+         "type": "Sensor",
+         "decimals": 0,
+         "unit": "mV",
+         "ch": 10013,
+         "code": 33798,
+         "group": 7,
+         "serial": "x",
+         "mac": "801F12644E01",
+         "registered": "2023-05-31 17:00:11",
+         "vals": {},
+         "aggr": [
+            "last"
+         ],
+         "values": {
+            "last": [
+               4279
+            ]
+         }
+      },
+      {
+         "name": "Watermark",
+         "name_original": "Watermark",
+         "type": "Sensor",
+         "decimals": 1,
+         "unit": "kPa",
+         "ch": 10015,
+         "code": 17921,
+         "group": 11,
+         "serial": "x",
+         "mac": "801F12644E01",
+         "registered": "2023-05-31 17:00:11",
+         "vals": {},
+         "aggr": [
+            "avg"
+         ],
+         "values": {
+            "avg": [
+               216
+            ]
+         }
+      },
+      {
+         "name": "Input number",
+         "name_original": "Input number",
+         "type": "Sensor",
+         "decimals": 0,
+         "unit": "",
+         "ch": 10018,
+         "code": 16388,
+         "group": 55,
+         "serial": "x",
+         "mac": "801F12644E01",
+         "registered": "2023-05-31 17:00:11",
+         "vals": {},
+         "aggr": [
+            "last"
+         ],
+         "values": {
+            "last": [
+               1
+            ]
+         }
+      },
+      {
+         "name": "5TE Soil temperature",
+         "name_original": "5TE Soil temperature",
+         "type": "Sensor",
+         "decimals": 1,
+         "unit": "\u00b0C",
+         "ch": 10019,
+         "code": 30740,
+         "group": 3,
+         "serial": "x",
+         "mac": "801F12644E01",
+         "registered": "2023-05-31 17:00:11",
+         "vals": {},
+         "aggr": [
+            "avg",
+            "max",
+            "min"
+         ],
+         "values": {
+            "avg": [
+               29.9
+            ],
+            "max": [
+               30
+            ],
+            "min": [
+               29.9
+            ]
+         }
+      },
+      {
+         "name": "5TE El permittivity",
+         "name_original": "5TE El permittivity",
+         "type": "Sensor",
+         "decimals": 1,
+         "unit": "",
+         "ch": 10020,
+         "code": 30737,
+         "group": 44,
+         "serial": "x",
+         "mac": "801F12644E01",
+         "registered": "2023-05-31 17:00:11",
+         "vals": {},
+         "aggr": [
+            "avg"
+         ],
+         "values": {
+            "avg": [
+               12.84
+            ]
+         }
+      },
+      {
+         "name": "Soil media",
+         "name_original": "Soil media",
+         "type": "Sensor",
+         "decimals": 0,
+         "unit": "",
+         "ch": 10021,
+         "code": 16387,
+         "group": 56,
+         "serial": "x",
+         "mac": "801F12644E01",
+         "registered": "2023-05-31 17:00:11",
+         "vals": {},
+         "aggr": [
+            "last"
+         ],
+         "values": {
+            "last": [
+               0
+            ]
+         }
+      },
+      {
+         "name": "5TE Water content",
+         "name_original": "5TE Water content",
+         "type": "Sensor",
+         "decimals": 2,
+         "unit": "%",
+         "ch": 10022,
+         "code": 30739,
+         "group": 25,
+         "serial": "x",
+         "mac": "801F12644E01",
+         "registered": "2023-05-31 17:00:11",
+         "vals": {},
+         "aggr": [
+            "avg"
+         ],
+         "values": {
+            "avg": [
+               24.03
+            ]
+         }
+      },
+      {
+         "name": "Input number",
+         "name_original": "Input number",
+         "type": "Sensor",
+         "decimals": 0,
+         "unit": "",
+         "ch": 10023,
+         "code": 16388,
+         "group": 55,
+         "serial": "x",
+         "mac": "801F12644E01",
+         "registered": "2023-05-31 17:00:11",
+         "vals": {},
+         "aggr": [
+            "last"
+         ],
+         "values": {
+            "last": [
+               2
+            ]
+         }
+      },
+      {
+         "name": "Midnight",
+         "type": "Calculation",
+         "unit": false,
+         "values": {
+            "result": [
+               null
+            ]
+         }
+      }
+   ]
+}

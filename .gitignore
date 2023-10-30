@@ -36,3 +36,5 @@ dist/
 /kubectl-hlf/hlf-operator
 node_modules
 istio-*
+
+wallet/

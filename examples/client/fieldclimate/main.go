@@ -5,6 +5,8 @@ import (
 	"math/rand"
 	"time"
 
+	"fieldclimate/modules"
+
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	mspclient "github.com/hyperledger/fabric-sdk-go/pkg/client/msp"
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
@@ -15,18 +17,49 @@ import (
 )
 
 func main() {
+	// configurações do cliente
 	//configFilePath := os.Args[1]
 	configFilePath := "connection-org.yaml"
 	channelName := "demo"
-	mspID := "Org1MSP"
-	chaincodeName := "fabcar"
+	mspID := "INMETROMSP"
+	chaincodeName := "fieldclimate"
 
 	enrollID := randomString(10)
 	registerEnrollUser(configFilePath, enrollID, mspID)
 
-	invokeCC(configFilePath, channelName, enrollID, mspID, chaincodeName, "CreateCar")
-	//invokeCCgw(configFilePath, channelName, enrollID, mspID, chaincodeName, "CreateCar")
-	queryCC(configFilePath, channelName, enrollID, mspID, chaincodeName, "QueryAllCars")
+	// puxando dados da api
+	// conecta-se a API e insere dados em um json
+	//modules.APIConnect("00206C61")
+	
+	// lê os dados do json
+	deviceName, deviceValues, deviceUnit, deviceDate := modules.JSONRead("00206C61", "HC Air temperature")
+
+	// CONVERSÃO DE DATAS EM UNIX
+	// Obtém a data e hora atual e converte em unix
+	dataAtual := time.Now()
+	unixTimestampAtual := dataAtual.Unix()
+
+	// obtém a data e hora dos dados da api e converte em unix
+	layout := "2006-01-02 15:04:05"
+
+	parsedDeviceDate, err := time.Parse(layout, deviceDate)
+    if err != nil {
+        fmt.Println("Erro ao analisar a data:", err)
+        return
+    }
+
+	deviceDateUnix := parsedDeviceDate.Unix()
+
+	fmt.Println("Nome do dispositivo: ", deviceName)
+	fmt.Println("Dados enviados por ele: ", deviceValues)
+	fmt.Println("Unidade de medição: ", deviceUnit)
+	fmt.Println("Horário de inserção dos dados na API em Unix: ", deviceDateUnix)
+	fmt.Println("Horário de execução do cliente em unix: ", unixTimestampAtual)
+
+	/* O invoke pode ser feito com o gateway (recomendado) ou sem */
+	//invokeCC(configFilePath, channelName, enrollID, mspID, chaincodeName, "ReadStationData")
+	invokeCCgw(configFilePath, channelName, enrollID, mspID, chaincodeName, "ReadStationData") //stationid, devicename, ...
+	//queryCC(configFilePath, channelName, enrollID, mspID, chaincodeName, "QueryAllCars")
 	//queryCCgw(configFilePath, channelName, enrollID, mspID, chaincodeName, "QueryAllCars")
 }
 
@@ -36,7 +69,7 @@ func registerEnrollUser(configFilePath, enrollID, mspID string) {
 	ctx := sdk.Context()
 	caClient, err := mspclient.New(
 		ctx,
-		mspclient.WithCAInstance("org1-ca.default"),
+		mspclient.WithCAInstance("inmetro-ca.default"),
 		mspclient.WithOrg(mspID),
 	) 
 	//mspclient.WithCAInstance("hq-guild-ca.fabric"),
@@ -49,7 +82,6 @@ func registerEnrollUser(configFilePath, enrollID, mspID string) {
 	if caClient != nil {
 		log.Info("ca client created")
 	}
-	// O ERRO VEM DAQUI ENROLLMENTSECRET
 	enrollmentSecret, err := caClient.Register(&mspclient.RegistrationRequest{
 		Name:           enrollID,
 		Type:           "client",
@@ -92,9 +124,12 @@ func invokeCCgw(configFilePath, channelName, userName, mspID, chaincodeName, fcn
 		log.Error(err)
 	}
 
+	wallet, err := gateway.NewFileSystemWallet(fmt.Sprintf("wallet/%s", mspID))
+
 	gw, err := gateway.Connect(
 		gateway.WithSDK(sdk),
 		gateway.WithUser(userName),
+		gateway.WithIdentity(wallet, userName),
 	)
 	if err != nil {
 		log.Error("Failed to create new Gateway: %s", err)
@@ -107,8 +142,10 @@ func invokeCCgw(configFilePath, channelName, userName, mspID, chaincodeName, fcn
 
 	contract := nw.GetContract(chaincodeName)
 
-	resp, err := contract.SubmitTransaction(fcn, userName, "a", "b", "1", "ewdscwds")
-
+	// aqui ele chama a função com os parametros!
+	//resp, err := contract.SubmitTransaction(fcn, userName, "a", "b", "1", "ewdscwds")
+	resp, err := contract.SubmitTransaction(fcn, "parametro1", "parametro2")
+	
 	if err != nil {
 		log.Error("Failed submit transaction: %s", err)
 	}

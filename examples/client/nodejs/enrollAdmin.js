@@ -6,7 +6,7 @@ const path = require('path');
 let mspId = "Org1MSP";
 const admin = 'enroll';
 const adminpw = 'enrollpw';
-const caUrl = 'org1-ca.default' // refer this from the connection profile
+const caUrl = 'https://org1-ca.localho.st:443' // refer this from the connection profile
 const yaml = require("js-yaml");
 async function enroll() {
     try {
