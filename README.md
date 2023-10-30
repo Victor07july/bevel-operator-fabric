@@ -684,11 +684,11 @@ kubectl hlf utils adduser --userPath=resources/peer-puc.yaml --config=resources/
 Com o arquivo de conexão preparado, vamos instalar o chaincode no peer que possua o atributo k8s-builder, como explicado no passo de deploy de peers
 
 ```bash
-kubectl hlf chaincode install --path=./fixtures/chaincodes/fabcar/go \
-    --config=resources/network.yaml --language=golang --label=fabcar --user=admin --peer=inmetro-peer0.default
+kubectl hlf chaincode install --path=./fixtures/chaincodes/fieldclimate \
+    --config=resources/network.yaml --language=golang --label=fieldclimate --user=admin --peer=inmetro-peer0.default
 
-kubectl hlf chaincode install --path=./fixtures/chaincodes/fabcar/go \
-    --config=resources/network.yaml --language=golang --label=fabcar --user=admin --peer=puc-peer0.default
+kubectl hlf chaincode install --path=./fixtures/chaincodes/fieldclimate \
+    --config=resources/network.yaml --language=golang --label=fieldclimate --user=admin --peer=puc-peer0.default
 
 # this can take 3-4 minutes
 ```
@@ -706,18 +706,18 @@ Aprovar chaincode
 ```bash
 #Organização INMETRO
 
-PACKAGE_ID=fabcar:0c616be7eebace4b3c2aa0890944875f695653dbf80bef7d95f3eed6667b5f40 # replace it with the package id of your chaincode
+PACKAGE_ID=fieldclimate:a6bebada562e6dfac1feb3aff0eec92624dde6e365b3a1e789503d9da49c7547 # replace it with the package id of your chaincode
 kubectl hlf chaincode approveformyorg --config=resources/network.yaml --user=admin --peer=inmetro-peer0.default \
     --package-id=$PACKAGE_ID \
-    --version "1.0" --sequence 1 --name=fabcar \
+    --version "1.0" --sequence 1 --name=fieldclimate \
     --policy="AND('INMETROMSP.member', 'PUCMSP.member')" --channel=demo
 
 # Organização PUC
 
-PACKAGE_ID=fabcar:0c616be7eebace4b3c2aa0890944875f695653dbf80bef7d95f3eed6667b5f40 # replace it with the package id of your chaincode
+PACKAGE_ID=fieldclimate:a6bebada562e6dfac1feb3aff0eec92624dde6e365b3a1e789503d9da49c7547 # replace it with the package id of your chaincode
 kubectl hlf chaincode approveformyorg --config=resources/network.yaml --user=admin --peer=puc-peer0.default \
     --package-id=$PACKAGE_ID \
-    --version "1.0" --sequence 1 --name=fabcar \
+    --version "1.0" --sequence 1 --name=fieldclimate \
     --policy="AND('INMETROMSP.member', 'PUCMSP.member')" --channel=demo
 ```
 
@@ -725,7 +725,7 @@ Fazer o commit do chaincode
 
 ```bash
 kubectl hlf chaincode commit --config=resources/network.yaml --mspid=INMETROMSP --user=admin \
-    --version "1.0" --sequence 1 --name=fabcar \
+    --version "1.0" --sequence 1 --name=fieldclimate \
     --policy="AND('INMETROMSP.member', 'PUCMSP.member')" --channel=demo
 ```
 
@@ -734,18 +734,26 @@ Testar chaincode
 ```bash
 kubectl hlf chaincode invoke --config=resources/network.yaml \
     --user=admin --peer=puc-peer0.default \
-    --chaincode=fabcar --channel=demo \
+    --chaincode=fieldclimate --channel=demo \
     --fcn=initLedger -a '[]'
 ```
 
-Fazer query de todos os carros / assets
+Fazer query de todos os assets
 
 ```bash
 kubectl hlf chaincode query --config=resources/network.yaml \
     --user=admin --peer=inmetro-peer0.default \
-    --chaincode=fabcar --channel=demo \
+    --chaincode=fieldclimate --channel=demo \
     --fcn=QueryAllCars -a '[]'
 ```
+
+## Fazendo upgrade de chaincode
+
+Package
+Install the new package
+Approve the cc with new version and sequence number
+Commit CC with new version and sequence.
+Install the chaincode pod
 
 ## Usando clientes:
 EM BREVE SE DEUS QUISER
