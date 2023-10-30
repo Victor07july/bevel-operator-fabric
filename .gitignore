@@ -38,3 +38,5 @@ node_modules
 istio-*
 
 wallet/
+resources/
+connection-org.yaml
