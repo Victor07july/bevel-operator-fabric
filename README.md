@@ -735,7 +735,7 @@ Testar chaincode
 kubectl hlf chaincode invoke --config=resources/network.yaml \
     --user=admin --peer=puc-peer0.default \
     --chaincode=fieldclimate --channel=demo \
-    --fcn=initLedger -a '[]'
+    --fcn=ReadStationData -a '[]'
 ```
 
 Fazer query de todos os assets
