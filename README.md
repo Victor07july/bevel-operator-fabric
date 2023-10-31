@@ -40,7 +40,7 @@ nodes:
     hostPort: 443
 EOF
 
-kind create cluster --config=./kind-config.yaml
+kind create cluster --config=./resources/kind-config.yaml
 
 ```
 
