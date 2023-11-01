@@ -27,7 +27,7 @@ Certifique-se de ter as seguintes portas disponíveis antes de começar:
 - 443
 
 ```bash
-cat << EOF > kind-config.yaml
+cat << EOF > resources/kind-config.yaml
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
