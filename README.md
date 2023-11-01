@@ -706,7 +706,7 @@ Aprovar chaincode
 ```bash
 #Organização INMETRO
 
-PACKAGE_ID=fieldclimate:a6bebada562e6dfac1feb3aff0eec92624dde6e365b3a1e789503d9da49c7547 # replace it with the package id of your chaincode
+PACKAGE_ID=fieldclimate:87e73371740cecf3505c81354fc17630fbae11178a89bf8d79c5d7076ad28f2d # replace it with the package id of your chaincode
 kubectl hlf chaincode approveformyorg --config=resources/network.yaml --user=admin --peer=inmetro-peer0.default \
     --package-id=$PACKAGE_ID \
     --version "1.0" --sequence 1 --name=fieldclimate \
@@ -714,7 +714,7 @@ kubectl hlf chaincode approveformyorg --config=resources/network.yaml --user=adm
 
 # Organização PUC
 
-PACKAGE_ID=fieldclimate:a6bebada562e6dfac1feb3aff0eec92624dde6e365b3a1e789503d9da49c7547 # replace it with the package id of your chaincode
+PACKAGE_ID=fieldclimate:87e73371740cecf3505c81354fc17630fbae11178a89bf8d79c5d7076ad28f2d # replace it with the package id of your chaincode
 kubectl hlf chaincode approveformyorg --config=resources/network.yaml --user=admin --peer=puc-peer0.default \
     --package-id=$PACKAGE_ID \
     --version "1.0" --sequence 1 --name=fieldclimate \
