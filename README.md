@@ -749,11 +749,15 @@ kubectl hlf chaincode query --config=resources/network.yaml \
 
 ## Fazendo upgrade de chaincode
 
-Package
-Install the new package
-Approve the cc with new version and sequence number
-Commit CC with new version and sequence.
-Install the chaincode pod
+1. Package
+
+2. Install the new package
+
+3. Approve the cc with new version and sequence number
+
+4. Commit CC with new version and sequence.
+
+5. Install the chaincode pod
 
 ## Usando clientes:
 EM BREVE SE DEUS QUISER
