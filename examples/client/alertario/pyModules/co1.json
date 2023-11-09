@@ -1,0 +1,125 @@
+
+    
+    {
+        "name": "blockchain-org1",
+        "description":"Connection profile to access the nmiblocknet from the NESA org",
+        "version":"0.1",
+        "client":{
+          "organization":"Example",
+          "tlsEnable": true,
+          "channel": "mychannel",
+          "adminUser": "admin",
+          "adminPassword": "adminpw",
+          "enableAuthentication": true,
+          "credentialStore":{
+            "path":"/tmp/hfc-kvs",
+            "cryptoStore":{
+              "path":"/tmp/hfc-cvs"
+            },
+            "wallet":"wallet-name"
+          }
+        },
+        "channels": {
+          "nmi-channel": {
+              "orderers": [
+                  "example.com"
+              ],
+              "peers": {
+                  "org1.example.com": {
+                      "endorsingPeer": true,
+                      "chaincodeQuery": true,
+                      "ledgerQuery": true,
+                      "eventSource": true
+                  }
+              }
+          }
+        },
+        "organizations":{
+          "example":{
+            "mspid": "Example",
+            "orderers": [
+              "example.com"
+            ],
+            "users": {
+              "Admin": {
+                "cert": "../../../organizations/ordererOrganizations/example.com/users/Admin@example.com/msp/signcerts/cert.pem",
+                "private_key": "../../../organizations/ordererOrganizations/example.com/users/Admin@example.com/msp/keystore/1502ad565e7a597b77693c1526637bac866f71efcb94e7b024879459cce2e8de_sk"}
+            }
+          }
+      
+        },
+        "orderers":{
+          "example.com":{
+            "url":"localhost:7050",
+            "grpcOptions": {
+              "grpc.ssl_target_name_override": "orderer.nmi",
+              "grpc-max-send-message-length": 15
+            },
+            "tlsCACerts": {
+              "path": "../../../organizations/ordererOrganizations/example.com/tlsca/tlsca.example.com-cert.pem"
+            },
+            "clientKey": {
+              "path": "../../../organizations/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.key"
+            },
+            "clientCert": {
+              "path": "../../../organizations/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.crt"
+            }
+          }
+        },
+        "peers":{
+          "org1.example.com":{
+            "url":"localhost:7051",
+            "eventUrl":"localhost:7053",
+            "grpcOptions": {
+              "grpc.ssl_target_name_override": "org1.example.com",
+              "grpc-max-send-message-length": 15
+            },
+            "tlsCACerts": {
+              "path": "../../../organizations/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem"
+            },
+            "clientKey": {
+              "path": "../../../organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/server.key"
+            },
+            "clientCert": {
+              "path": "../../../organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/server.crt"
+            }
+          },
+          "org2.example.com":{
+            "url":"localhost:9051",
+            "eventUrl":"localhost:9053",
+            "grpcOptions": {
+              "grpc.ssl_target_name_override": "org2.example.com",
+              "grpc-max-send-message-length": 15
+            },
+            "tlsCACerts": {
+              "path": "../../../organizations/peerOrganizations/org2.example.com/tlsca/tlsca.org2.example.com-cert.pem"
+            },
+            "clientKey": {
+              "path": "../../../organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/server.key"
+            },
+            "clientCert": {
+              "path": "../../../organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/server.crt"
+            }
+          }
+        },
+        "certificateAuthorities":{
+          "org1.example.com":{
+            "url":"https://localhost:7054",
+            "registrar":[
+              {
+                "enrollId":"org1admin",
+                "enrollSecret":"org2adminpw"
+              }
+            ]
+          },
+          "org2.example.com":{
+            "url":"https://localhost:8054",
+            "registrar":[
+              {
+                "enrollId":"org1admin",
+                "enrollSecret":"org2adminpw"
+              }
+            ]
+          }
+        }
+      }

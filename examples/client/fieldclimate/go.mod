@@ -1,6 +1,6 @@
 module fieldclimate
 
-go 1.20
+go 1.18
 
 require github.com/hyperledger/fabric-sdk-go v1.0.0
 

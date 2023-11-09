@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-// Defina uma estrutura que corresponda à estrutura do JSON.
+// Define uma estrutura que corresponde à estrutura do JSON
 type SensorValue struct {
 	Name         string                   `json:"name"`
 	NameOriginal string                   `json:"name_original"`

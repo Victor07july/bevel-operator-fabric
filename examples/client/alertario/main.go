@@ -1,12 +1,11 @@
 package main
 
 import (
+	"alertario/modules"
 	"fmt"
 	"math/rand"
 	"strconv"
 	"time"
-
-	"fieldclimate/modules"
 
 	mspclient "github.com/hyperledger/fabric-sdk-go/pkg/client/msp"
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
@@ -21,61 +20,60 @@ func main() {
 	configFilePath := "connection-org.yaml"
 	channelName := "demo"
 	mspID := "INMETROMSP"
-	chaincodeName := "fieldclimate"
+	chaincodeName := "alertario"
 
 	enrollID := randomString(10)
 	registerEnrollUser(configFilePath, enrollID, mspID)
 
-	/* conecta-se a API e insere dados em um json */
-	modules.APIConnect("00206C61")
-	
-	// lê os dados do json
-	stationID := "00206C61"
-	deviceName, deviceValues, deviceUnit, deviceDate := modules.JSONRead(stationID, "HC Air temperature")
+	// realiza o call do código python que se conecta ao alerta rio
+	stationID := "1"
+	modules.CallPy(stationID)
 
-	/* CONVERSÃO DE DATAS EM UNIX */
+	/*pega os dados retornados (lidos no JSON) */
+	horaLeitura, precipitacaoUltHora, dirVentoGraus, velVento, temperatura, pressao, umidade, ultimaAtualizacao := modules.JSONRead()
+
+	/*transformando horario em unix*/
 	// Obtém a data e hora atual e converte em unix
 	dataAtual := time.Now()
-	clientExecutionUnix := dataAtual.Unix()
+	timestampClient := dataAtual.Unix()
 
 	// obtém a data e hora dos dados da api e converte em unix
-	layout := "2006-01-02 15:04:05"
-
-	parsedDeviceDate, err := time.Parse(layout, deviceDate)
-    if err != nil {
-        fmt.Println("Erro ao analisar a data:", err)
-        return
-    }
-	deviceDateUnix := parsedDeviceDate.Unix()
-
-
-	// passando valores para string
-	deviceValuesString := ""
-	for key, values := range deviceValues {
-		deviceValuesString += key + ": " + fmt.Sprint(values) + " "
+	layout := "15:04 02/01/2006" // Define o layout da string de data
+	// Transforma ultimaAtualizacao em horário Unix
+	ultimaAtualizacaoTime, err := time.Parse(layout, ultimaAtualizacao)
+	if err != nil {
+		log.Error("Failed to parse ultimaAtualizacao: ", err)
 	}
+	timestampAtualizacao := ultimaAtualizacaoTime.Unix()
 
-	deviceDateUnixStr := strconv.FormatInt(deviceDateUnix, 10)
-	clientExecutionUnixStr := strconv.FormatInt(deviceDateUnix, 10)
+	fmt.Println("Hora Leitura: ", horaLeitura)
+	fmt.Println("Precipitacao Ultima Hora: ", precipitacaoUltHora)
+	fmt.Println("Direcao Vento Graus: ", dirVentoGraus)
+	fmt.Println("Velocidade Vento: ", velVento)
+	fmt.Println("Temperatura: ", temperatura)
+	fmt.Println("Pressao: ", pressao)
+	fmt.Println("Umidade: ", umidade)
+	fmt.Println("Ultima Atualizacao: ", ultimaAtualizacao)
+	fmt.Println("Timestamp Atualizacao: ", timestampAtualizacao)
+	fmt.Println("Timestamp Client: ", timestampClient)
 
-	fmt.Println("Nome do dispositivo: ", deviceName)
-	fmt.Println("Dados enviados por ele: ", deviceValuesString)
-	fmt.Println("Unidade de medição: ", deviceUnit)
-	fmt.Println("Horário em que os dados foram atualizados na API: ", deviceDate)
-	fmt.Println("Horário de inserção dos dados na API em Unix: ", deviceDateUnix)
-	fmt.Println("Horário de execução do cliente: ", dataAtual)
-	fmt.Println("Horário de execução do cliente em unix: ", clientExecutionUnix)
 
 	/* O invoke pode ser feito com o gateway (gw) (recomendado) ou sem */
-	modules.InvokeCCgw(configFilePath, channelName, enrollID, mspID, chaincodeName, "InsertDeviceData", []string{
-		stationID, 
-		deviceName, 
-		deviceUnit.(string), 
-		deviceValuesString, 
-		deviceDateUnixStr, 
-		clientExecutionUnixStr,
+
+	modules.InvokeCCgw(configFilePath, channelName, enrollID, mspID, chaincodeName, "InsertStationData", []string{
+		stationID,
+		horaLeitura,
+		precipitacaoUltHora,
+		dirVentoGraus,
+		velVento,
+		temperatura,
+		pressao,
+		umidade,
+		strconv.FormatInt(timestampAtualizacao, 10),
+		strconv.FormatInt(timestampClient, 10),
 		})
-	modules.QueryCCgw(configFilePath, channelName, enrollID, mspID, chaincodeName, "QueryDevice", []string{stationID})
+	modules.QueryCCgw(configFilePath, channelName, enrollID, mspID, chaincodeName, "QueryStation", []string{stationID})
+
 }
 
 func registerEnrollUser(configFilePath, enrollID, mspID string) {
@@ -86,7 +84,7 @@ func registerEnrollUser(configFilePath, enrollID, mspID string) {
 		ctx,
 		mspclient.WithCAInstance("inmetro-ca.default"),
 		mspclient.WithOrg(mspID),
-	) 
+	)
 
 	if err != nil {
 		log.Error("Failed to create msp client: %s\n", err)
@@ -100,8 +98,8 @@ func registerEnrollUser(configFilePath, enrollID, mspID string) {
 		Type:           "client",
 		MaxEnrollments: -1,
 		Affiliation:    "",
-		Attributes: nil,
-		Secret:     enrollID,
+		Attributes:     nil,
+		Secret:         enrollID,
 	})
 	if err != nil {
 		log.Error(err)

@@ -7,6 +7,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
@@ -16,9 +17,15 @@ type SmartContract struct {
 	contractapi.Contract
 }
 
-// identificador será station id
-type StationData struct {
-	DeviceName          string `json:"name"`
+// QueryResult structure used for handling result of query
+type QueryResult struct {
+	Key    string `json:"Key"`
+	Record *Device
+}
+
+// dispositivo de uma estação. Identificador será station id
+type Device struct {
+	DeviceName          string `json:"devicename"`
 	Unit                string `json:"unit"`
 	Values              string `json:"values"`
 	LastUpdateUnix      string `json:"lastupdateunix"`
@@ -28,31 +35,45 @@ type StationData struct {
 
 const compositeKey = ""
 
-// chave composta id e timestamp unix
-func (s *SmartContract) InsertStationData(ctx contractapi.TransactionContextInterface,
-	stationid string,
-	devicename string,
-	unit string,
-	values string,
-	lastupdateunix string,
-	clientexecutionunix string,
-) error {
+// InitLedger adds a base set of cars to the ledger
+func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) error {
+	devices := []Device{
+		Device{DeviceName: "HC Air temperature", Unit: "%C", Values: "12, 13, 24", LastUpdateUnix: "123123", ClientExecutionUnix: "234234"},
+		Device{DeviceName: "HC Air temperature", Unit: "%C", Values: "=3, 20, 23", LastUpdateUnix: "123124", ClientExecutionUnix: "234235"},
+		Device{DeviceName: "HC Air temperature", Unit: "%C", Values: "14, 25, 22", LastUpdateUnix: "123125", ClientExecutionUnix: "234236"},
+		Device{DeviceName: "HC Air temperature", Unit: "%C", Values: "15, 30, 21", LastUpdateUnix: "123126", ClientExecutionUnix: "234237"},
+		Device{DeviceName: "HC Air temperature", Unit: "%C", Values: "16, 35, 20", LastUpdateUnix: "123127", ClientExecutionUnix: "234238"},
+	}
 
-	stationdata := StationData{
-		DeviceName:          devicename,
+	for i, device := range devices {
+		deviceAsBytes, _ := json.Marshal(device)
+		err := ctx.GetStub().PutState("DEVICE"+strconv.Itoa(i), deviceAsBytes)
+
+		if err != nil {
+			return fmt.Errorf("Failed to put to world state. %s", err.Error())
+		}
+	}
+
+	return nil
+}
+
+func (s *SmartContract) InsertDeviceData(ctx contractapi.TransactionContextInterface, stationID string, deviceName string, unit string, values string, lastupdateunix string, clientexecutionunix string) error {
+	device := Device{
+		DeviceName:          deviceName,
 		Unit:                unit,
 		Values:              values,
 		LastUpdateUnix:      lastupdateunix,
 		ClientExecutionUnix: clientexecutionunix,
 	}
 
-	stationdataJSON, err := json.Marshal(stationdata)
-	if err != nil {
-		return err
-	}
+	deviceAsBytes, _ := json.Marshal(device)
 
 	// chave composta
-	key, err := ctx.GetStub().CreateCompositeKey(compositeKey, []string{stationid, devicename})
+	key, err := ctx.GetStub().CreateCompositeKey(compositeKey, []string{stationID, deviceName})
+
+	if err != nil {
+		return fmt.Errorf("Failed to create composite key: %s", err.Error())
+	}
 
 	// verifica se já existe com a mesma chave composta (id e updatetimeunix)
 	// exists, err := s.AssetExists(ctx, key)
@@ -64,40 +85,87 @@ func (s *SmartContract) InsertStationData(ctx contractapi.TransactionContextInte
 	// 	return fmt.Errorf("o objeto %s já existe com o mesmo id", key)
 	// }
 
-	return ctx.GetStub().PutState(key, stationdataJSON)
+	return ctx.GetStub().PutState(key, deviceAsBytes)
+	
 }
 
-func (s *SmartContract) ReadStationData(ctx contractapi.TransactionContextInterface, id string, devicename string) (*StationData, error) {
-	// cria a chave composta usando o id
-	key, err := ctx.GetStub().CreateCompositeKey(compositeKey, []string{id, devicename})
+func (s *SmartContract) QueryDevice(ctx contractapi.TransactionContextInterface, stationID string) (*Device, error) {
+	deviceAsBytes, err := ctx.GetStub().GetState(stationID)
+
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
 	}
 
-	// buscar o valor associado à chave composta
-	// *tentar usar getStateByPartialCompositeKey*
-	value, err := ctx.GetStub().GetState(key)
-	if err != nil {
-		return nil, err
+	if deviceAsBytes == nil {
+		return nil, fmt.Errorf("%s dispositivo com o nome inserido não existe", stationID)
 	}
 
-	// verifique se o valor retornado é nulo
-	if value == nil {
-		return nil, fmt.Errorf("Nenhum valor encontrado para a chave %s", key)
-	}
+	device := new(Device)
+	_ = json.Unmarshal(deviceAsBytes, device)
 
-	// cria estrutura para receber manipular os dados recebidos
-	var stationdata StationData
-
-	// realiza o unmarshal dos dados recebidos na estrutura
-	err = json.Unmarshal(value, &stationdata)
-	if err != nil {
-		return nil, err
-	}
-
-	return &stationdata, nil
+	return device, nil
 }
 
+func (s *SmartContract) QueryDeviceByCompositeKey(ctx contractapi.TransactionContextInterface, stationID string, deviceName string) (*Device, error) {
+		// cria a chave composta usando o id da estação e nome do dispositivo
+		key, err := ctx.GetStub().CreateCompositeKey(compositeKey, []string{stationID, deviceName})
+
+		if err != nil {
+			return nil, fmt.Errorf("Failed to create composite key: %s", err)
+		}
+
+		// buscar o valor associado à chave composta
+		/* tentar usar getStateByPartialCompositeKey futuramente */
+		valueAsBytes, err := ctx.GetStub().GetState(key)
+
+		if err != nil {
+			return nil, fmt.Errorf("Failed to read from world state: %s", err)
+		}
+
+		if valueAsBytes == nil {
+			return nil, fmt.Errorf("Nenhum valor encontrado para a chave", key)
+		}
+
+		// criando estrutura
+		device := new(Device)
+
+		// realiza o unmarshal do valor encontrado
+		_ = json.Unmarshal(valueAsBytes, device)
+
+		return device, nil
+
+}
+
+// QueryAllDevices returns all devices found in world state
+func (s *SmartContract) QueryAllDevices(ctx contractapi.TransactionContextInterface) ([]QueryResult, error) {
+	startKey := ""
+	endKey := ""
+
+	resultsIterator, err := ctx.GetStub().GetStateByRange(startKey, endKey)
+
+	if err != nil {
+		return nil, err
+	}
+	defer resultsIterator.Close()
+
+	results := []QueryResult{}
+
+	for resultsIterator.HasNext() {
+		queryResponse, err := resultsIterator.Next()
+
+		if err != nil {
+			return nil, err
+		}
+
+		device := new(Device)
+		_ = json.Unmarshal(queryResponse.Value, device)
+
+		queryResult := QueryResult{Key: queryResponse.Key, Record: device}
+		results = append(results, queryResult)
+	}
+
+	return results, nil
+}
 
 func main() {
 
