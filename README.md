@@ -27,7 +27,7 @@ Certifique-se de ter as seguintes portas disponíveis antes de começar:
 - 443
 
 ```bash
-cat << EOF > kind-config.yaml
+cat << EOF > resources/kind-config.yaml
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
@@ -706,7 +706,7 @@ Aprovar chaincode
 ```bash
 #Organização INMETRO
 
-PACKAGE_ID=fieldclimate:a6bebada562e6dfac1feb3aff0eec92624dde6e365b3a1e789503d9da49c7547 # replace it with the package id of your chaincode
+PACKAGE_ID=fieldclimate:87e73371740cecf3505c81354fc17630fbae11178a89bf8d79c5d7076ad28f2d # replace it with the package id of your chaincode
 kubectl hlf chaincode approveformyorg --config=resources/network.yaml --user=admin --peer=inmetro-peer0.default \
     --package-id=$PACKAGE_ID \
     --version "1.0" --sequence 1 --name=fieldclimate \
@@ -714,7 +714,7 @@ kubectl hlf chaincode approveformyorg --config=resources/network.yaml --user=adm
 
 # Organização PUC
 
-PACKAGE_ID=fieldclimate:a6bebada562e6dfac1feb3aff0eec92624dde6e365b3a1e789503d9da49c7547 # replace it with the package id of your chaincode
+PACKAGE_ID=fieldclimate:87e73371740cecf3505c81354fc17630fbae11178a89bf8d79c5d7076ad28f2d # replace it with the package id of your chaincode
 kubectl hlf chaincode approveformyorg --config=resources/network.yaml --user=admin --peer=puc-peer0.default \
     --package-id=$PACKAGE_ID \
     --version "1.0" --sequence 1 --name=fieldclimate \
@@ -749,11 +749,15 @@ kubectl hlf chaincode query --config=resources/network.yaml \
 
 ## Fazendo upgrade de chaincode
 
-Package
-Install the new package
-Approve the cc with new version and sequence number
-Commit CC with new version and sequence.
-Install the chaincode pod
+1. Package
+
+2. Install the new package
+
+3. Approve the cc with new version and sequence number
+
+4. Commit CC with new version and sequence.
+
+5. Install the chaincode pod
 
 ## Usando clientes:
 EM BREVE SE DEUS QUISER
