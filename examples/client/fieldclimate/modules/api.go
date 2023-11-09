@@ -1,4 +1,4 @@
-package modules	
+package modules
 
 import (
 	"bytes"
@@ -27,23 +27,13 @@ func createHMAC(method, request, publicKey, privateKey string) string {
 	return hmacStr
 }
 
-// função para formatar a resposta JSON da API
-func PrettyString(str string) (string, error) {
-	var prettyJSON bytes.Buffer
-	if err := json.Indent(&prettyJSON, []byte(str), "", "   "); err != nil {
-		return "", err
-	}
-	return prettyJSON.String(), nil
-}
-
 func APIConnect(stationid string) {
-	publicKey := "5da57d0c13bf6b3f685700f662d3b2995dc91a70cc7dd1f4"
-	privateKey := "7b8f665b8f0b3440045c6be312e4ef979e237496026c9122"
+	PUBLIC_KEY, PRIVATE_KEY := ReadKeys()
 	apiURI := "https://api.fieldclimate.com/v2"
-	request := "/data/" + stationid + "/raw/last/1" // mude a rota aqui 
-	method := "POST" 							  // mude o método aqui
+	request := "/data/" + stationid + "/raw/last/1" // mude a rota aqui
+	method := "POST"                                // mude o método aqui
 	url := apiURI + request
-	hmacStr := createHMAC(method, request, publicKey, privateKey)
+	hmacStr := createHMAC(method, request, PUBLIC_KEY, PRIVATE_KEY)
 
 	// iniciando request para a api
 	req, err := http.NewRequest(method, url, nil)
@@ -64,7 +54,7 @@ func APIConnect(stationid string) {
 		fmt.Println(err)
 		return
 	}
-	
+
 	// verificar status (deve ser "200 OK")
 	if resp.Status != "200 OK" {
 		fmt.Println("Error")
@@ -87,8 +77,17 @@ func APIConnect(stationid string) {
 
 	// salva resposta em um arquivo JSON com o nome da estação
 	file, _ := PrettyString(string(body))
-	os.WriteFile("stationids/" + stationid + ".json", []byte(file), 0644)
-	fmt.Println("Dados da estação salvos em: " + stationid + ".json")
+	os.WriteFile("json/"+stationid+".json", []byte(file), 0644)
+	fmt.Println("Dados da estação salvos em: json/" + stationid + ".json")
 
 	//fmt.Println(PrettyString(string(body)))
+}
+
+// função para formatar a resposta JSON da API
+func PrettyString(str string) (string, error) {
+	var prettyJSON bytes.Buffer
+	if err := json.Indent(&prettyJSON, []byte(str), "", "   "); err != nil {
+		return "", err
+	}
+	return prettyJSON.String(), nil
 }

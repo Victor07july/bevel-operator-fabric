@@ -38,5 +38,8 @@ node_modules
 istio-*
 
 wallet/
+keystore/
+msp/
 resources/
 connection-org.yaml
+keys.json

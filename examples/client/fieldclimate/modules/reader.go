@@ -29,10 +29,15 @@ type Data struct {
 	Data  []SensorValue `json:"data"`
 }
 
+type Keys struct {
+	PUBLIC_KEY  string `json:"public_key"`
+	PRIVATE_KEY string `json:"private_key"`
+}
+
 func JSONRead(stationid string, stationdevice string) (string, map[string][]interface{}, interface{},string) {
 
 	// Abra o arquivo JSON
-	file, err := os.Open("stations/" + stationid + ".json")
+	file, err := os.Open("json/" + stationid + ".json")
 	if err != nil {
 		fmt.Println("Erro ao abrir o arquivo JSON:", err)
 		return "", nil, nil, ""
@@ -68,11 +73,38 @@ func JSONRead(stationid string, stationdevice string) (string, map[string][]inte
 		}
 	}
 
-	if flag == false {
+	if !flag {
 		fmt.Println("Dispositivo não encontrada")
 		return "", nil, nil, ""
 	}
 
 	return "", nil, nil, ""
 
+}
+
+// função para ler as chaves no arquivo json
+func ReadKeys() (string, string) {
+	fmt.Println("Lendo JSON...")
+	file, err := os.Open("json/keys.json")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Leitura realizada com sucesso!")
+	defer file.Close()
+
+	// criando um decoder JSON para o arquivo lido
+	decoder := json.NewDecoder(file)
+
+	// decodificando json na estrutura
+	keys := new(Keys)
+	err = decoder.Decode(&keys)
+	if err != nil {
+		fmt.Println("Erro ao decodificar JSON: ", err)
+	}
+
+	// separando os dados da estrutura em variáveis
+	PUBLIC_KEY := keys.PUBLIC_KEY
+	PRIVATE_KEY := keys.PRIVATE_KEY
+
+	return PUBLIC_KEY, PRIVATE_KEY
 }
