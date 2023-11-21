@@ -21,15 +21,15 @@ type QueryResult struct {
 
 type DadosEstacaoAR struct {
 	// ID da estação é a chave e não entra no struct
-	HoraLeitura       	  string `json:"horaleitura"`
-	PrecipitacaoUltHora   string `json:"totalultimahora"`
-	DirecaoVentoGraus 	  string `json:"direcaoventograus"`
-	VelocidadeVento   	  string `json:"velocidadevento"`
-	Temperatura       	  string `json:"temperatura"`
-	Pressao           	  string `json:"pressao"`
-	Umidade           	  string `json:"umidade"`
-	TimestampEstacao  	  string `json:"timestampestacao"`
-	TimestampCliente  	  string `json:"timestampcliente"`
+	HoraLeitura         string `json:"horaleitura"`
+	PrecipitacaoUltHora string `json:"totalultimahora"`
+	DirecaoVentoGraus   string `json:"direcaoventograus"`
+	VelocidadeVento     string `json:"velocidadevento"`
+	Temperatura         string `json:"temperatura"`
+	Pressao             string `json:"pressao"`
+	Umidade             string `json:"umidade"`
+	TimestampEstacao    string `json:"timestampestacao"`
+	TimestampCliente    string `json:"timestampcliente"`
 }
 
 const compositeKey = ""
@@ -59,22 +59,21 @@ func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) 
 func (s *SmartContract) InsertStationData(ctx contractapi.TransactionContextInterface, stationID string, horaLeitura string, precipitacaoUltHora string, direcaoVentoGraus string, temperatura string, pressao string, umidade string, timestampEstacao string, timestampCliente string) error {
 
 	stationData := DadosEstacaoAR{
-		HoraLeitura: 	 		horaLeitura,
-		PrecipitacaoUltHora: 	precipitacaoUltHora,
-		DirecaoVentoGraus: 		direcaoVentoGraus,
-		VelocidadeVento: 		"0",
-		Temperatura: 			temperatura,
-		Pressao: 				pressao,
-		Umidade: 				umidade,
-		TimestampEstacao: 		timestampEstacao,
-		TimestampCliente:		timestampCliente,
+		HoraLeitura:         horaLeitura,
+		PrecipitacaoUltHora: precipitacaoUltHora,
+		DirecaoVentoGraus:   direcaoVentoGraus,
+		VelocidadeVento:     "0",
+		Temperatura:         temperatura,
+		Pressao:             pressao,
+		Umidade:             umidade,
+		TimestampEstacao:    timestampEstacao,
+		TimestampCliente:    timestampCliente,
 	}
 
 	stationDataAsBytes, _ := json.Marshal(stationData)
 
-
 	return ctx.GetStub().PutState(stationID, stationDataAsBytes)
-	
+
 }
 
 func (s *SmartContract) QueryStation(ctx contractapi.TransactionContextInterface, stationID string) (*DadosEstacaoAR, error) {
@@ -93,7 +92,6 @@ func (s *SmartContract) QueryStation(ctx contractapi.TransactionContextInterface
 
 	return stationData, nil
 }
-
 
 // QueryAllDevices returns all devices found in world state
 func (s *SmartContract) QueryAllStations(ctx contractapi.TransactionContextInterface) ([]QueryResult, error) {
@@ -131,11 +129,11 @@ func main() {
 	chaincode, err := contractapi.NewChaincode(new(SmartContract))
 
 	if err != nil {
-		fmt.Printf("Error create fabcar chaincode: %s", err.Error())
+		fmt.Printf("Error create alertario chaincode: %s", err.Error())
 		return
 	}
 
 	if err := chaincode.Start(); err != nil {
-		fmt.Printf("Error starting fabcar chaincode: %s", err.Error())
+		fmt.Printf("Error starting alertario chaincode: %s", err.Error())
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"strconv"
 	"time"
+	"os"
 
 	mspclient "github.com/hyperledger/fabric-sdk-go/pkg/client/msp"
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
@@ -16,19 +17,29 @@ import (
 )
 
 func main() {
+	// inicializando o log
+	file, err := os.OpenFile("logs/log.txt", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.SetOutput(file)
+	log.Info("Iniciando cliente...")
+
 	//configFilePath := os.Args[1]
 	configFilePath := "connection-org.yaml"
 	channelName := "demo"
 	mspID := "INMETROMSP"
 	chaincodeName := "alertario"
 
-	enrollID := randomString(10)
-	registerEnrollUser(configFilePath, enrollID, mspID)
+	//enrollID := randomString(10)
+	//registerEnrollUser(configFilePath, enrollID, mspID)
 
-	// realiza o call do código python que se conecta ao alerta rio
+	log.Info("Conectando-se ao Alerta Rio...")
 	stationID := "1"
 	modules.CallPy(stationID)
+	log.Info("Conexão realizada. Estação buscada: ", stationID + ". Dados da busca salvos em json/alertario.json")
 
+	log.Info("Lendo JSON...")
 	/*pega os dados retornados (lidos no JSON) */
 	horaLeitura, precipitacaoUltHora, dirVentoGraus, velVento, temperatura, pressao, umidade, ultimaAtualizacao := modules.JSONRead()
 
@@ -59,8 +70,8 @@ func main() {
 
 
 	/* O invoke pode ser feito com o gateway (gw) (recomendado) ou sem */
-
-	modules.InvokeCCgw(configFilePath, channelName, enrollID, mspID, chaincodeName, "InsertStationData", []string{
+	log.Info("Realizando invoke...")
+	modules.InvokeCCgw(configFilePath, channelName, "admin", mspID, chaincodeName, "InsertStationData", []string{
 		stationID,
 		horaLeitura,
 		precipitacaoUltHora,
@@ -72,8 +83,8 @@ func main() {
 		strconv.FormatInt(timestampAtualizacao, 10),
 		strconv.FormatInt(timestampClient, 10),
 		})
-	modules.QueryCCgw(configFilePath, channelName, enrollID, mspID, chaincodeName, "QueryStation", []string{stationID})
-
+	log.Info("Realizando query")
+	modules.QueryCCgw(configFilePath, channelName, "admin", mspID, chaincodeName, "QueryStation", []string{stationID})
 }
 
 func registerEnrollUser(configFilePath, enrollID, mspID string) {

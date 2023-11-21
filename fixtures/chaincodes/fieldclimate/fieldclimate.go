@@ -75,64 +75,72 @@ func (s *SmartContract) InsertDeviceData(ctx contractapi.TransactionContextInter
 		return fmt.Errorf("Failed to create composite key: %s", err.Error())
 	}
 
-	// verifica se já existe com a mesma chave composta (id e updatetimeunix)
-	// exists, err := s.AssetExists(ctx, key)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// if exists {
-	// 	return fmt.Errorf("o objeto %s já existe com o mesmo id", key)
-	// }
-
 	return ctx.GetStub().PutState(key, deviceAsBytes)
-	
 }
 
-func (s *SmartContract) QueryDevice(ctx contractapi.TransactionContextInterface, stationID string) (*Device, error) {
-	deviceAsBytes, err := ctx.GetStub().GetState(stationID)
+func (s *SmartContract) QueryDeviceByCompositeKey(ctx contractapi.TransactionContextInterface, stationID string, deviceName string) (*Device, error) {
+	// cria a chave composta usando o id da estação e nome do dispositivo
+	key, err := ctx.GetStub().CreateCompositeKey(compositeKey, []string{stationID, deviceName})
+
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create composite key: %s", err)
+	}
+
+	// buscar o valor associado à chave composta
+	/* tentar usar getStateByPartialCompositeKey futuramente */
+	valueAsBytes, err := ctx.GetStub().GetState(key)
+
+	if err != nil {
+		return nil, fmt.Errorf("Failed to read from world state: %s", err)
+	}
+
+	if valueAsBytes == nil {
+		return nil, fmt.Errorf("Nenhum valor encontrado para a chave", key)
+	}
+
+	// criando estrutura
+	device := new(Device)
+
+	// realiza o unmarshal do valor encontrado
+	_ = json.Unmarshal(valueAsBytes, device)
+
+	return device, nil
+
+}
+
+// procura dados do dispositivo em um tempo unix específico
+func (s *SmartContract) QueryByHistory(ctx contractapi.TransactionContextInterface, stationID string, deviceName string, unixTime string) (*Device, error) {
+	key, err := ctx.GetStub().CreateCompositeKey(compositeKey, []string{stationID, deviceName})
 
 	if err != nil {
 		return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
 	}
 
-	if deviceAsBytes == nil {
-		return nil, fmt.Errorf("%s dispositivo com o nome inserido não existe", stationID)
+	historyIer, err := ctx.GetStub().GetHistoryForKey(key)
+
+	if err != nil {
+		return nil, fmt.Errorf(err.Error())
 	}
 
-	device := new(Device)
-	_ = json.Unmarshal(deviceAsBytes, device)
-
-	return device, nil
-}
-
-func (s *SmartContract) QueryDeviceByCompositeKey(ctx contractapi.TransactionContextInterface, stationID string, deviceName string) (*Device, error) {
-		// cria a chave composta usando o id da estação e nome do dispositivo
-		key, err := ctx.GetStub().CreateCompositeKey(compositeKey, []string{stationID, deviceName})
-
+	for historyIer.HasNext() {
+		queryResponse, err := historyIer.Next()
 		if err != nil {
-			return nil, fmt.Errorf("Failed to create composite key: %s", err)
+			return nil, fmt.Errorf(err.Error())
 		}
 
-		// buscar o valor associado à chave composta
-		/* tentar usar getStateByPartialCompositeKey futuramente */
-		valueAsBytes, err := ctx.GetStub().GetState(key)
-
-		if err != nil {
-			return nil, fmt.Errorf("Failed to read from world state: %s", err)
-		}
-
-		if valueAsBytes == nil {
-			return nil, fmt.Errorf("Nenhum valor encontrado para a chave", key)
-		}
-
-		// criando estrutura
+		deviceAsBytes := queryResponse.Value
 		device := new(Device)
+		json.Unmarshal(deviceAsBytes, device)
+		lastUpdateUnix := device.LastUpdateUnix
 
-		// realiza o unmarshal do valor encontrado
-		_ = json.Unmarshal(valueAsBytes, device)
+		if unixTime == lastUpdateUnix {
+			fmt.Printf("Found device data with timestamp: ", unixTime)
+			return device, nil
+		}
 
-		return device, nil
+	}
+	historyIer.Close()
+	return nil, fmt.Errorf("Device data with timestamp: " + unixTime + " not found")
 
 }
 
@@ -172,11 +180,11 @@ func main() {
 	chaincode, err := contractapi.NewChaincode(new(SmartContract))
 
 	if err != nil {
-		fmt.Printf("Error create fabcar chaincode: %s", err.Error())
+		fmt.Printf("Error create fieldclimate chaincode: %s", err.Error())
 		return
 	}
 
 	if err := chaincode.Start(); err != nil {
-		fmt.Printf("Error starting fabcar chaincode: %s", err.Error())
+		fmt.Printf("Error starting fieldclimate chaincode: %s", err.Error())
 	}
 }

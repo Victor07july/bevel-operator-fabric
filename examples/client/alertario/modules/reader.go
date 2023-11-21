@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	log "github.com/sirupsen/logrus"
+
 )
 
 type AlertaRio struct {
@@ -35,12 +37,15 @@ func JSONRead() (string, string, string, string, string, string, string, string)
 	err = decoder.Decode(&alertario)
 	if err != nil {
 		fmt.Println("Erro ao decodificar JSON: ", err)
+		log.Fatal(err)
 	}
+
 
 	// verificando se há dados para esta estação
 	oneExists := alertario.OneExists
 	if !oneExists {
-		fmt.Println("Não há dados para esta estação! Encerrando programa...")
+		fmt.Println("Não há dados para esta estação! Verifique se ela está disponível. Encerrando programa...")
+		log.Info("Esta estação não existe ou está indisponível. Encerrando...")
 		os.Exit(0)
 	}
 
@@ -55,6 +60,6 @@ func JSONRead() (string, string, string, string, string, string, string, string)
 	umidade := alertario.Umidade
 	ultimaAtualizacao := fmt.Sprintf("%v", alertario.UltimaAtualizacao)
 
-
+	log.Info("Dados encontrados. Retornando...")
 	return horaLeitura, precipitacaoUltHora, dirVentoGraus, velVento, temperatura, pressao, umidade, ultimaAtualizacao
 }

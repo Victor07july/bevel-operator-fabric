@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"os"
 	"strconv"
 	"time"
 
@@ -17,6 +18,15 @@ import (
 )
 
 func main() {
+	// inicializando o log
+	file, err := os.OpenFile("logs/log.txt", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.SetOutput(file)
+	log.Info("Iniciando cliente...")
+
+
 	//configFilePath := os.Args[1]
 	configFilePath := "connection-org.yaml"
 	channelName := "demo"
@@ -26,12 +36,36 @@ func main() {
 	enrollID := randomString(10)
 	registerEnrollUser(configFilePath, enrollID, mspID)
 
+	// id da estação para se conectar
+	stationID := "00206C61"
+
+	// leitura do json pré conexão com a api
+	_, _, _, oldDeviceDate := modules.JSONRead(stationID, "HC Air temperature")
+
 	/* conecta-se a API e insere dados em um json */
 	modules.APIConnect("00206C61")
-	
+
 	// lê os dados do json
-	stationID := "00206C61"
 	deviceName, deviceValues, deviceUnit, deviceDate := modules.JSONRead(stationID, "HC Air temperature")
+	fmt.Println("Dados lidos do json: ", deviceName, deviceValues, deviceUnit, deviceDate)
+
+	var resposta string
+
+	if oldDeviceDate == deviceDate {
+		log.Info("Dados repetidos encontrados")
+		fmt.Println("Os dados da estação " + stationID + " não foram atualizados")
+		fmt.Println("Última atualização: " + deviceDate)
+		fmt.Println("Deseja continuar? (s/n)")
+		fmt.Scanln(&resposta)
+		
+		if resposta == "n" {
+			log.Info("Encerrando...")
+			log.Exit(0)
+		} else if resposta == "s" {
+			log.Info("Prosseguindo execução com dados repetidos")
+			fmt.Println("Continuando...")
+		}
+	}
 
 	/* CONVERSÃO DE DATAS EM UNIX */
 	// Obtém a data e hora atual e converte em unix
@@ -42,12 +76,11 @@ func main() {
 	layout := "2006-01-02 15:04:05"
 
 	parsedDeviceDate, err := time.Parse(layout, deviceDate)
-    if err != nil {
-        fmt.Println("Erro ao analisar a data:", err)
-        return
-    }
+	if err != nil {
+		fmt.Println("Erro ao analisar a data:", err)
+		return
+	}
 	deviceDateUnix := parsedDeviceDate.Unix()
-
 
 	// passando valores para string
 	deviceValuesString := ""
@@ -66,16 +99,25 @@ func main() {
 	fmt.Println("Horário de execução do cliente: ", dataAtual)
 	fmt.Println("Horário de execução do cliente em unix: ", clientExecutionUnix)
 
-	/* O invoke pode ser feito com o gateway (gw) (recomendado) ou sem */
+	/* O invoke pode ser feito com o gateway/gw (recomendado) ou sem */
 	modules.InvokeCCgw(configFilePath, channelName, enrollID, mspID, chaincodeName, "InsertDeviceData", []string{
-		stationID, 
-		deviceName, 
-		deviceUnit.(string), 
-		deviceValuesString, 
-		deviceDateUnixStr, 
+		stationID,
+		deviceName,
+		deviceUnit.(string),
+		deviceValuesString,
+		deviceDateUnixStr,
 		clientExecutionUnixStr,
-		})
-	modules.QueryCCgw(configFilePath, channelName, enrollID, mspID, chaincodeName, "QueryDevice", []string{stationID})
+	})
+
+	/*query por chave composta: id e nome do dispositivo*/
+	modules.QueryCCgw(configFilePath, channelName, enrollID, mspID, chaincodeName, "QueryDeviceByCompositeKey", []string{stationID, deviceName})
+
+	/*query por chave composta (id e nome) + tempo unix especifico*/
+	//modules.QueryCCgw(configFilePath, channelName, enrollID, mspID, chaincodeName, "QueryByHistory", []string{stationID, deviceName, "1695486600"})
+
+	/*query all devices só funciona com dados inseridos via initledger, investigando*/
+	//modules.QueryCCgw(configFilePath, channelName, enrollID, mspID, chaincodeName, "QueryAllDevices", nil)
+
 }
 
 func registerEnrollUser(configFilePath, enrollID, mspID string) {
@@ -86,7 +128,7 @@ func registerEnrollUser(configFilePath, enrollID, mspID string) {
 		ctx,
 		mspclient.WithCAInstance("inmetro-ca.default"),
 		mspclient.WithOrg(mspID),
-	) 
+	)
 
 	if err != nil {
 		log.Error("Failed to create msp client: %s\n", err)
@@ -100,8 +142,8 @@ func registerEnrollUser(configFilePath, enrollID, mspID string) {
 		Type:           "client",
 		MaxEnrollments: -1,
 		Affiliation:    "",
-		Attributes: nil,
-		Secret:     enrollID,
+		Attributes:     nil,
+		Secret:         enrollID,
 	})
 	if err != nil {
 		log.Error(err)
