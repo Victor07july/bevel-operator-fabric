@@ -1,4 +1,4 @@
-#Documentação sobre clientes
+# Documentação sobre clientes
 
 O Hyperledger Fabric é uma plataforma para soluções de contabilidade distribuída sustentadas por uma arquitetura modular que oferece altos graus de confidencialidade, resiliência, flexibilidade e escalabilidade. Ele foi projetado para oferecer suporte a implementações conectáveis ​​de diferentes componentes e acomodar a complexidade e os meandros existentes em todo o ecossistema econômico.
 
@@ -10,10 +10,13 @@ Este projeto blockchain possui dois clientes:
 
 Para mais detalhes, a documentação oficial do Hyperledger Fabric será um otimo guia com tutoriais de como a rede funciona -  <link>https://hyperledger-fabric.readthedocs.io/en/latest/</link>
 
-Para utilizar os clientes é necessário primeiro instalar o seu respectivo chaincode/smart contract. O chaincode utilizado no exemplo é o do FieldClimate.
+Para utilizar os clientes é necessário primeiro levantar a rede e instalar o seu respectivo chaincode/smart contract. O chaincode utilizado no exemplo é o do FieldClimate.
+A
 
 # Tutorial de como usar o cliente FieldClimate
 
 OBS: É necessário inserir suas próprias chaves pública e privada em fieldclimate/modules/api.go, comentando a linha 31 e alterando as variáveis PUBLIC_KEY, PRIVATE_KEY pelas suas respectivas chaves privada e publica.
 
-Para começar, abra o terminal e acesse a pasta do projeto.
+
+
+Para começar, abra o terminal e acesse a pasta FieldClimate com o comando ````cd fieldclimate``.
