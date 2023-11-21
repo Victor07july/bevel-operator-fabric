@@ -760,7 +760,8 @@ kubectl hlf chaincode query --config=resources/network.yaml \
 5. Install the chaincode pod
 
 ## Usando clientes:
-EM BREVE SE DEUS QUISER
+[Usando Clientes](examples/client/README.md)
+
 
 # Levantando Operator UI
 
