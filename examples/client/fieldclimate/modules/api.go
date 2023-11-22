@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"os"
 	"time"
@@ -58,8 +59,7 @@ func APIConnect(stationid string) {
 	// verificar status (deve ser "200 OK")
 	if resp.Status != "200 OK" {
 		fmt.Println("Error")
-		fmt.Println(resp.Status)
-		return
+		log.Fatal(resp.Status)
 	} else {
 		fmt.Println("Autenticação realizada com sucesso")
 		fmt.Println("Status code: " + resp.Status)

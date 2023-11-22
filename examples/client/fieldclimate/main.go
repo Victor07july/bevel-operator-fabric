@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"math/rand"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"fieldclimate/modules"
@@ -33,20 +35,25 @@ func main() {
 	mspID := "INMETROMSP"
 	chaincodeName := "fieldclimate"
 
-	enrollID := randomString(10)
-	registerEnrollUser(configFilePath, enrollID, mspID)
-
 	// id da estação para se conectar
-	stationID := "00206C61"
+	fmt.Print("Insira o ID da estação (ex: 00206C61): ")
+	var stationID string
+	fmt.Scanln(&stationID)
+	log.Info("Estação buscada: ", stationID)
 
-	// leitura do json pré conexão com a api
-	_, _, _, oldDeviceDate := modules.JSONRead(stationID, "HC Air temperature")
+	// leitura da data do json pré conexão com a api (para comparar com os dados lidos após a conexão)
+	oldDeviceDate, _ := modules.ReadDate(stationID)
 
-	/* conecta-se a API e insere dados em um json */
-	modules.APIConnect("00206C61")
+	/* conecta-se a API buscando a estação desejada e insere seus dados em um json */
+	modules.APIConnect(stationID)
 
-	// lê os dados do json
-	deviceName, deviceValues, deviceUnit, deviceDate := modules.JSONRead(stationID, "HC Air temperature")
+	fmt.Print("Insira o ID do dispositivo da estação (ex: HC Air temperature): ")
+	reader := bufio.NewReader(os.Stdin)
+	stationDevice, _ := reader.ReadString('\n')
+	stationDevice = strings.Replace(stationDevice, "\n", "", -1)
+
+	// lê os dados do dispositivo no json
+	deviceName, deviceValues, deviceUnit, deviceDate := modules.JSONRead(stationID, stationDevice)
 	fmt.Println("Dados lidos do json: ", deviceName, deviceValues, deviceUnit, deviceDate)
 
 	var resposta string
@@ -98,6 +105,10 @@ func main() {
 	fmt.Println("Horário de inserção dos dados na API em Unix: ", deviceDateUnix)
 	fmt.Println("Horário de execução do cliente: ", dataAtual)
 	fmt.Println("Horário de execução do cliente em unix: ", clientExecutionUnix)
+
+
+	enrollID := randomString(10)
+	registerEnrollUser(configFilePath, enrollID, mspID)
 
 	/* O invoke pode ser feito com o gateway/gw (recomendado) ou sem */
 	modules.InvokeCCgw(configFilePath, channelName, enrollID, mspID, chaincodeName, "InsertDeviceData", []string{

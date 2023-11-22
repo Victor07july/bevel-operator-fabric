@@ -3,6 +3,7 @@ package modules
 import (
 	"encoding/json"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"os"
 )
 
@@ -40,6 +41,7 @@ func JSONRead(stationid string, stationdevice string) (string, map[string][]inte
 	file, err := os.Open("json/" + stationid + ".json")
 	if err != nil {
 		fmt.Println("Erro ao abrir o arquivo JSON:", err)
+		log.Fatal(err)
 		return "", nil, nil, ""
 	}
 	defer file.Close()
@@ -81,6 +83,31 @@ func JSONRead(stationid string, stationdevice string) (string, map[string][]inte
 	return "", nil, nil, ""
 
 }
+
+func ReadDate(stationid string) (string, error) {
+	// Open the JSON file
+	file, err := os.Open("json/" + stationid + ".json")
+	if err != nil {
+		return "", fmt.Errorf("Error opening JSON file: %v", err)
+	}
+	defer file.Close()
+
+	// Create a JSON decoder for the file
+	decoder := json.NewDecoder(file)
+
+	// Decode the JSON into the data structure
+	var data Data
+	err = decoder.Decode(&data)
+	if err != nil {
+		return "", fmt.Errorf("Error decoding JSON: %v", err)
+	}
+
+	// Get the first date from the data
+	date := data.Dates[0]
+
+	return date, nil
+}
+
 
 // função para ler as chaves no arquivo json
 func ReadKeys() (string, string) {

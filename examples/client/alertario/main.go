@@ -25,17 +25,18 @@ func main() {
 	log.SetOutput(file)
 	log.Info("Iniciando cliente...")
 
+	fmt.Print("Insira o ID da estação: ")
+	var stationID string
+	fmt.Scanln(&stationID)
+	log.Info("Estação buscada: ", stationID)
+
 	//configFilePath := os.Args[1]
 	configFilePath := "connection-org.yaml"
 	channelName := "demo"
 	mspID := "INMETROMSP"
 	chaincodeName := "alertario"
 
-	//enrollID := randomString(10)
-	//registerEnrollUser(configFilePath, enrollID, mspID)
-
 	log.Info("Conectando-se ao Alerta Rio...")
-	stationID := "1"
 	modules.CallPy(stationID)
 	log.Info("Conexão realizada. Estação buscada: ", stationID + ". Dados da busca salvos em json/alertario.json")
 
@@ -69,9 +70,12 @@ func main() {
 	fmt.Println("Timestamp Client: ", timestampClient)
 
 
+	enrollID := randomString(10)
+	registerEnrollUser(configFilePath, enrollID, mspID)
+
 	/* O invoke pode ser feito com o gateway (gw) (recomendado) ou sem */
 	log.Info("Realizando invoke...")
-	modules.InvokeCCgw(configFilePath, channelName, "admin", mspID, chaincodeName, "InsertStationData", []string{
+	modules.InvokeCCgw(configFilePath, channelName, enrollID, mspID, chaincodeName, "InsertStationData", []string{
 		stationID,
 		horaLeitura,
 		precipitacaoUltHora,
@@ -84,7 +88,7 @@ func main() {
 		strconv.FormatInt(timestampClient, 10),
 		})
 	log.Info("Realizando query")
-	modules.QueryCCgw(configFilePath, channelName, "admin", mspID, chaincodeName, "QueryStation", []string{stationID})
+	modules.QueryCCgw(configFilePath, channelName, enrollID, mspID, chaincodeName, "QueryStation", []string{stationID})
 }
 
 func registerEnrollUser(configFilePath, enrollID, mspID string) {
