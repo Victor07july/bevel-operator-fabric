@@ -1,3 +1,5 @@
+# TROQUE ESSE CERTIFICADO PELO CERTIFICADO DA SUA ORGANIZAÇÃO
+
 certificateAuthorities:
   ord-ca.default:
     caName: ca

@@ -41,6 +41,6 @@ wallet/
 keystore/
 msp/
 resources/
-**/connection-org.yaml
+connection-org.yaml
 **/keys.json
 logs/
