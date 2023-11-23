@@ -40,5 +40,4 @@ istio-*
 wallet/
 keystore/
 msp/
-resources/
 **/keys.json

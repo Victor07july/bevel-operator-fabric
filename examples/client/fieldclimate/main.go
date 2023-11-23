@@ -51,6 +51,8 @@ func main() {
 	reader := bufio.NewReader(os.Stdin)
 	stationDevice, _ := reader.ReadString('\n')
 	stationDevice = strings.Replace(stationDevice, "\n", "", -1)
+	log.Info("Dispositivo buscado: ", stationDevice)
+
 
 	// lê os dados do dispositivo no json
 	deviceName, deviceValues, deviceUnit, deviceDate := modules.JSONRead(stationID, stationDevice)
