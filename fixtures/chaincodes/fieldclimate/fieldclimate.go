@@ -12,16 +12,43 @@ import (
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
+// ver git tag github
+
 // SmartContract provides functions for managing a car
 type SmartContract struct {
 	contractapi.Contract
 }
-
+/*
+// id chave 
+type Station {
+	credits
+	owner
+}
+*/
 // QueryResult structure used for handling result of query
 type QueryResult struct {
 	Key    string `json:"Key"`
 	Record *Device
 }
+
+// igual o device atual sem o values
+// o que não muda vai pro register
+/*
+	deviceregister
+
+	devicename
+
+
+*/
+
+// o que muda vai pro data
+/*
+devicedata
+
+	Values              string `json:"values"`
+	LastUpdateUnix      string `json:"lastupdateunix"`
+	ClientExecutionUnix string `json:"clientexecutionunix"`
+*/
 
 // dispositivo de uma estação. Identificador será station id
 type Device struct {
@@ -56,6 +83,8 @@ func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) 
 
 	return nil
 }
+
+// criar função de registrar esta~çao
 
 func (s *SmartContract) InsertDeviceData(ctx contractapi.TransactionContextInterface, stationID string, deviceName string, unit string, values string, lastupdateunix string, clientexecutionunix string) error {
 	device := Device{

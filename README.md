@@ -18,6 +18,25 @@
 Resources:
 - [Hyperledger Fabric build ARM](https://www.polarsparc.com/xhtml/Hyperledger-ARM-Build.html)
 
+# Script para levantar a rede automáticamente
+
+Para levantar a rede automáticamente pelo terminal, basta usar o script ./network.sh pelo terminal
+
+```bash
+  ./network.sh up
+```
+
+Ele possui os seguintes comandos:
+
+```bash
+  echo "'up' - Inicia o cluster Kubernetes"
+  echo "'chaincode <nome do chaincode>' - Realiza o deploy do chaincode"
+  echo "'upgrade' <nome do chaincode> <versao> <sequencia> - Faz o upgrade do chaincode"
+  echo "'down' - Destrói o cluster Kubernetes e todos os recursos criados"
+  echo "'help' - Mostra alguns comandos que podem ajudar a diagnosticar problemas na rede"
+```
+
+
 ## Criar Cluster Kubernetes
 
 Para começar o deploy da rede Fabric é necessário criar um cluster Kubernetes. Será utilizado aqui o KinD.
@@ -704,9 +723,10 @@ kubectl hlf chaincode queryinstalled --config=resources/network.yaml --user=admi
 Aprovar chaincode
 
 ```bash
-#Organização INMETRO
+  export PACKAGE_ID=$(kubectl hlf chaincode calculatepackageid --path=./examples/chaincodes/$CHAINCODE_LABEL --language=go --label=$CHAINCODE_LABEL)
+  echo "PACKAGE_ID=$PACKAGE_ID"
 
-PACKAGE_ID=fieldclimate:87e73371740cecf3505c81354fc17630fbae11178a89bf8d79c5d7076ad28f2d # replace it with the package id of your chaincode
+#Organização INMETRO
 kubectl hlf chaincode approveformyorg --config=resources/network.yaml --user=admin --peer=inmetro-peer0.default \
     --package-id=$PACKAGE_ID \
     --version "1.0" --sequence 1 --name=fieldclimate \
@@ -714,7 +734,6 @@ kubectl hlf chaincode approveformyorg --config=resources/network.yaml --user=adm
 
 # Organização PUC
 
-PACKAGE_ID=fieldclimate:87e73371740cecf3505c81354fc17630fbae11178a89bf8d79c5d7076ad28f2d # replace it with the package id of your chaincode
 kubectl hlf chaincode approveformyorg --config=resources/network.yaml --user=admin --peer=puc-peer0.default \
     --package-id=$PACKAGE_ID \
     --version "1.0" --sequence 1 --name=fieldclimate \
@@ -826,7 +845,6 @@ A essa altura, você deve ter:
 - Organização PUC com 1 peer e CA
 - Um canal chamado "demo"
 - Um chaincode instalado nos peers do INMETRO e PUC, aprovado e "commitado"
-
 
 ## Derrubando o ambiente
 

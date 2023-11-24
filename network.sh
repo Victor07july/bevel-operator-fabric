@@ -21,6 +21,7 @@ function chaincode_install() {
 
   kubectl hlf utils adduser --userPath=resources/peer-puc.yaml --config=resources/network.yaml --username=admin --mspid=PUCMSP
 
+  # calcula id do chaincode
   export PACKAGE_ID=$(kubectl hlf chaincode calculatepackageid --path=./examples/chaincodes/$CHAINCODE_LABEL --language=go --label=$CHAINCODE_LABEL)
   echo "PACKAGE_ID=$PACKAGE_ID"
 
@@ -67,7 +68,55 @@ function chaincode_install() {
   echo "Fim"
 }
 
-function up() {
+function chaincode_upgrade() {
+  CHAINCODE_LABEL = $1
+  CHAINCODE_VERSION = $2
+  CHAINCODE_SEQUENCE = $3
+
+  export PACKAGE_ID=$(kubectl hlf chaincode calculatepackageid --path=./examples/chaincodes/$CHAINCODE_LABEL --language=go --label=$CHAINCODE_LABEL)
+  echo "PACKAGE_ID=$PACKAGE_ID"
+
+  kubectl hlf chaincode install --path=./fixtures/chaincodes/$CHAINCODE_LABEL \
+  --config=resources/network.yaml --language=golang --label=$CHAINCODE_LABEL --user=admin --peer=inmetro-peer0.default
+
+  echo "Instalando chaincode na organização PUC"
+
+  kubectl hlf chaincode install --path=./fixtures/chaincodes/$CHAINCODE_LABEL \
+      --config=resources/network.yaml --language=golang --label=$CHAINCODE_LABEL --user=admin --peer=puc-peer0.default
+  # this can take 3-4 minutes
+
+  # esse processo de aguardar evita erros com o approve
+  echo "Aguardando 1 minuto para o pod dos chaincodes serem carregado"
+  sleep 60
+
+  echo "Aprovando chaincode em ambas as organizações"
+  
+  #Organização INMETRO
+  kubectl hlf chaincode approveformyorg --config=resources/network.yaml --user=admin --peer=inmetro-peer0.default \
+      --package-id=$PACKAGE_ID \
+      --version "$2" --sequence $3 --name=$CHAINCODE_LABEL \
+      --policy="AND('INMETROMSP.member', 'PUCMSP.member')" --channel=demo
+
+  # Organização PUC
+  kubectl hlf chaincode approveformyorg --config=resources/network.yaml --user=admin --peer=puc-peer0.default \
+      --package-id=$PACKAGE_ID \
+      --version "$2" --sequence $3 --name=$CHAINCODE_LABEL \
+      --policy="AND('INMETROMSP.member', 'PUCMSP.member')" --channel=demo
+
+  echo "Aguarde 10 segundos..."
+  sleep 10
+  echo "Realizando commit do chaincode"
+  
+  kubectl hlf chaincode commit --config=resources/network.yaml --mspid=INMETROMSP --user=admin \
+    --version "$2" --sequence $3 --name=$CHAINCODE_LABEL \
+    --policy="AND('INMETROMSP.member', 'PUCMSP.member')" --channel=demo
+
+  # evita erro com o invoke
+  echo "Aguarde 1 minuto para o pod do chaincode ser carregado"
+  echo "Fim"
+}
+
+function setNodes() {
   export PEER_IMAGE=hyperledger/fabric-peer
   export PEER_VERSION=2.5.0
 
@@ -337,172 +386,179 @@ EOF
           --from-file=pucmsp.yaml=$PWD/resources/pucmsp.yaml \
           --from-file=orderermsp.yaml=$PWD/resources/orderermsp.yaml
 
+  
+}
+
+function createChannel() {
   echo "Criando canal principal"
 
-  export PEER_ORG_SIGN_CERT=$(kubectl get fabriccas inmetro-ca -o=jsonpath='{.status.ca_cert}')
-  export PEER_ORG_TLS_CERT=$(kubectl get fabriccas inmetro-ca -o=jsonpath='{.status.tlsca_cert}')
-  export IDENT_8=$(printf "%8s" "")
-  export ORDERER_TLS_CERT=$(kubectl get fabriccas ord-ca -o=jsonpath='{.status.tlsca_cert}' | sed -e "s/^/${IDENT_8}/" )
-  export ORDERER0_TLS_CERT=$(kubectl get fabricorderernodes ord-node0 -o=jsonpath='{.status.tlsCert}' | sed -e "s/^/${IDENT_8}/" )
-  export ORDERER1_TLS_CERT=$(kubectl get fabricorderernodes ord-node1 -o=jsonpath='{.status.tlsCert}' | sed -e "s/^/${IDENT_8}/" )
-  export ORDERER2_TLS_CERT=$(kubectl get fabricorderernodes ord-node2 -o=jsonpath='{.status.tlsCert}' | sed -e "s/^/${IDENT_8}/" )
+export PEER_ORG_SIGN_CERT=$(kubectl get fabriccas inmetro-ca -o=jsonpath='{.status.ca_cert}')
+export PEER_ORG_TLS_CERT=$(kubectl get fabriccas inmetro-ca -o=jsonpath='{.status.tlsca_cert}')
+export IDENT_8=$(printf "%8s" "")
+export ORDERER_TLS_CERT=$(kubectl get fabriccas ord-ca -o=jsonpath='{.status.tlsca_cert}' | sed -e "s/^/${IDENT_8}/" )
+export ORDERER0_TLS_CERT=$(kubectl get fabricorderernodes ord-node0 -o=jsonpath='{.status.tlsCert}' | sed -e "s/^/${IDENT_8}/" )
+export ORDERER1_TLS_CERT=$(kubectl get fabricorderernodes ord-node1 -o=jsonpath='{.status.tlsCert}' | sed -e "s/^/${IDENT_8}/" )
+export ORDERER2_TLS_CERT=$(kubectl get fabricorderernodes ord-node2 -o=jsonpath='{.status.tlsCert}' | sed -e "s/^/${IDENT_8}/" )
 
-  kubectl apply -f - <<EOF
-  apiVersion: hlf.kungfusoftware.es/v1alpha1
-  kind: FabricMainChannel
-  metadata:
-    name: demo
-  spec:
-    name: demo
-    adminOrdererOrganizations:
-      - mspID: OrdererMSP
-    adminPeerOrganizations:
-      - mspID: INMETROMSP
-    channelConfig:
-      application:
-        acls: null
-        capabilities:
-          - V2_0
-        policies: null
+kubectl apply -f - <<EOF
+apiVersion: hlf.kungfusoftware.es/v1alpha1
+kind: FabricMainChannel
+metadata:
+  name: demo
+spec:
+  name: demo
+  adminOrdererOrganizations:
+    - mspID: OrdererMSP
+  adminPeerOrganizations:
+    - mspID: INMETROMSP
+  channelConfig:
+    application:
+      acls: null
       capabilities:
-        - V2_0    
-      orderer:
-        batchSize:
-          absoluteMaxBytes: 1048576
-          maxMessageCount: 120
-          preferredMaxBytes: 524288
-        batchTimeout: 2s
-        capabilities:
-          - V2_0
-        etcdRaft:
-          options:
-            electionTick: 10
-            heartbeatTick: 1
-            maxInflightBlocks: 5
-            snapshotIntervalSize: 16777216
-            tickInterval: 500ms
-        ordererType: etcdraft
-        policies: null
-        state: STATE_NORMAL    
+        - V2_0
       policies: null
-    externalOrdererOrganizations: []
-    peerOrganizations:
-      - mspID: INMETROMSP
-        caName: "inmetro-ca"
-        caNamespace: "default"
-      - mspID: PUCMSP
-        caName: "puc-ca"
-        caNamespace: "default" 
-    identities:
-      OrdererMSP:
-        secretKey: orderermsp.yaml
-        secretName: wallet
-        secretNamespace: default
-      INMETROMSP:
-        secretKey: inmetromsp.yaml
-        secretName: wallet
-        secretNamespace: default
-    externalPeerOrganizations: []
-    ordererOrganizations:
-      - caName: "ord-ca"
-        caNamespace: "default"
-        externalOrderersToJoin:
-          - host: ord-node0
-            port: 7053
-          - host: ord-node1
-            port: 7053
-          - host: ord-node2
-            port: 7053
-        mspID: OrdererMSP
-        ordererEndpoints:
-          - ord-node0:7050
-          - ord-node1:7050
-          - ord-node2:7050
-        orderersToJoin: []
-    orderers:
-      - host: ord-node0
-        port: 7050
-        tlsCert: |-
-  ${ORDERER0_TLS_CERT}
-      - host: ord-node1
-        port: 7050
-        tlsCert: |-
-  ${ORDERER1_TLS_CERT}
-      - host: ord-node2
-        port: 7050
-        tlsCert: |-
-  ${ORDERER2_TLS_CERT}
-EOF
-
-
-  echo "Ingressando peers das organizacoes no canal"
-
-
-  export IDENT_8=$(printf "%8s" "")
-  export ORDERER0_TLS_CERT=$(kubectl get fabricorderernodes ord-node0 -o=jsonpath='{.status.tlsCert}' | sed -e "s/^/${IDENT_8}/" )
-
-  kubectl apply -f - <<EOF
-  apiVersion: hlf.kungfusoftware.es/v1alpha1
-  kind: FabricFollowerChannel
-  metadata:
-    name: demo-inmetromsp
-  spec:
-    anchorPeers:
-      - host: inmetro-peer0.default
-        port: 7051
-    hlfIdentity:
+    capabilities:
+      - V2_0    
+    orderer:
+      batchSize:
+        absoluteMaxBytes: 1048576
+        maxMessageCount: 120
+        preferredMaxBytes: 524288
+      batchTimeout: 2s
+      capabilities:
+        - V2_0
+      etcdRaft:
+        options:
+          electionTick: 10
+          heartbeatTick: 1
+          maxInflightBlocks: 5
+          snapshotIntervalSize: 16777216
+          tickInterval: 500ms
+      ordererType: etcdraft
+      policies: null
+      state: STATE_NORMAL    
+    policies: null
+  externalOrdererOrganizations: []
+  peerOrganizations:
+    - mspID: INMETROMSP
+      caName: "inmetro-ca"
+      caNamespace: "default"
+    - mspID: PUCMSP
+      caName: "puc-ca"
+      caNamespace: "default" 
+  identities:
+    OrdererMSP:
+      secretKey: orderermsp.yaml
+      secretName: wallet
+      secretNamespace: default
+    INMETROMSP:
       secretKey: inmetromsp.yaml
       secretName: wallet
       secretNamespace: default
-    mspId: INMETROMSP
-    name: demo
-    externalPeersToJoin: []
-    orderers:
-      - certificate: |
-  ${ORDERER0_TLS_CERT}
-        url: grpcs://ord-node0.default:7050
-    peersToJoin:
-      - name: inmetro-peer0
-        namespace: default
+  externalPeerOrganizations: []
+  ordererOrganizations:
+    - caName: "ord-ca"
+      caNamespace: "default"
+      externalOrderersToJoin:
+        - host: ord-node0
+          port: 7053
+        - host: ord-node1
+          port: 7053
+        - host: ord-node2
+          port: 7053
+      mspID: OrdererMSP
+      ordererEndpoints:
+        - ord-node0:7050
+        - ord-node1:7050
+        - ord-node2:7050
+      orderersToJoin: []
+  orderers:
+    - host: ord-node0
+      port: 7050
+      tlsCert: |-
+${ORDERER0_TLS_CERT}
+    - host: ord-node1
+      port: 7050
+      tlsCert: |-
+${ORDERER1_TLS_CERT}
+    - host: ord-node2
+      port: 7050
+      tlsCert: |-
+${ORDERER2_TLS_CERT}
+EOF
+
+  echo "Ingressando peers da organizaçao INMETRO no canal"
+
+
+export IDENT_8=$(printf "%8s" "")
+export ORDERER0_TLS_CERT=$(kubectl get fabricorderernodes ord-node0 -o=jsonpath='{.status.tlsCert}' | sed -e "s/^/${IDENT_8}/" )
+
+kubectl apply -f - <<EOF
+apiVersion: hlf.kungfusoftware.es/v1alpha1
+kind: FabricFollowerChannel
+metadata:
+  name: demo-inmetromsp
+spec:
+  anchorPeers:
+    - host: inmetro-peer0.default
+      port: 7051
+  hlfIdentity:
+    secretKey: inmetromsp.yaml
+    secretName: wallet
+    secretNamespace: default
+  mspId: INMETROMSP
+  name: demo
+  externalPeersToJoin: []
+  orderers:
+    - certificate: |
+${ORDERER0_TLS_CERT}
+      url: grpcs://ord-node0.default:7050
+  peersToJoin:
+    - name: inmetro-peer0
+      namespace: default
+EOF
+
+  echo "Ingressando peers da organização PUC no canal"
+
+
+export IDENT_8=$(printf "%8s" "")
+export ORDERER0_TLS_CERT=$(kubectl get fabricorderernodes ord-node0 -o=jsonpath='{.status.tlsCert}' | sed -e "s/^/${IDENT_8}/" )
+
+kubectl apply -f - <<EOF
+apiVersion: hlf.kungfusoftware.es/v1alpha1
+kind: FabricFollowerChannel
+metadata:
+  name: demo-pucmsp
+spec:
+  anchorPeers:
+    - host: puc-peer0.default
+      port: 7051
+  hlfIdentity:
+    secretKey: pucmsp.yaml
+    secretName: wallet
+    secretNamespace: default
+  mspId: PUCMSP
+  name: demo
+  externalPeersToJoin: []
+  orderers:
+    - certificate: |
+${ORDERER0_TLS_CERT}
+      url: grpcs://orderer0-ord.localho.st:443
+  peersToJoin:
+    - name: puc-peer0
+      namespace: default
 EOF
 
 
-  export IDENT_8=$(printf "%8s" "")
-  export ORDERER0_TLS_CERT=$(kubectl get fabricorderernodes ord-node0 -o=jsonpath='{.status.tlsCert}' | sed -e "s/^/${IDENT_8}/" )
-
-  kubectl apply -f - <<EOF
-  apiVersion: hlf.kungfusoftware.es/v1alpha1
-  kind: FabricFollowerChannel
-  metadata:
-    name: demo-pucmsp
-  spec:
-    anchorPeers:
-      - host: puc-peer0.default
-        port: 7051
-    hlfIdentity:
-      secretKey: pucmsp.yaml
-      secretName: wallet
-      secretNamespace: default
-    mspId: PUCMSP
-    name: demo
-    externalPeersToJoin: []
-    orderers:
-      - certificate: |
-  ${ORDERER0_TLS_CERT}
-        url: grpcs://orderer0-ord.localho.st:443
-    peersToJoin:
-      - name: puc-peer0
-        namespace: default
-EOF
 
   echo "Fim"
-
 }
 
 
 if [ "$1" == "up" ]; then
     echo "Iniciando processo de levantamento do cluster Kubernetes"
-    up
+    # setNodes
+    createChannel
     echo "Verifique o status dos pods com o comando: 'kubectl get pods'"
 
 elif [ "$1" == "chaincode" ]; then
@@ -525,11 +581,30 @@ elif [ "$1" == "down" ]; then
   
   exit 0
 
+elif [ "$1" == "help" ]; then
+  echo "Alguns dos comandos que podem ajudar a diagnosticar problemas"
+  echo "--------------------"
+  echo "Verificar status do canal:"
+  echo "--------------------"
+  echo "kubectl get fabricmainchannel"
+  echo "kubectl get fabricfollowerchannel"
+  echo "Em caso de erro, use: "
+  echo "kubectl get fabricmainchannel <canal> -o yaml"
+  echo "kubectl get fabricfollowerchannel <canal> -o yaml"
+  echo "--------------------"
+  echo "Verificar status dos pods"
+  echo "--------------------"
+  echo "kubectl get pods"
+  echo "kubectl get pods -o wide"
+
+
 else
     echo "Comando não reconhecido"
     echo "Comandos possíveis: "
     echo "'up' - Inicia o cluster Kubernetes"
     echo "'chaincode <nome do chaincode>' - Realiza o deploy do chaincode"
+    echo "'upgrade' <nome do chaincode> <versao> <sequencia> - Faz o upgrade do chaincode"
     echo "'down' - Destrói o cluster Kubernetes e todos os recursos criados"
+    echo "'help' - Mostra alguns comandos que podem ajudar a diagnosticar problemas na rede"
     exit 1
 fi
