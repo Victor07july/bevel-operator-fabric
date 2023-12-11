@@ -557,7 +557,7 @@ EOF
 
 if [ "$1" == "up" ]; then
     echo "Iniciando processo de levantamento do cluster Kubernetes"
-    # setNodes
+    setNodes
     createChannel
     echo "Verifique o status dos pods com o comando: 'kubectl get pods'"
 
